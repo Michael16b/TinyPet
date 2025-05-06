@@ -70,6 +70,15 @@
 <!-- 		<dispatcher>INCLUDE</dispatcher> -->
 <!-- 		<dispatcher>FORWARD</dispatcher> -->
 <!-- 	</filter-mapping> -->
+	<servlet>
+		<servlet-name>FrontendServlet</servlet-name>
+		<servlet-class>org.example.FrontendServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>FrontendServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
 
 
 
