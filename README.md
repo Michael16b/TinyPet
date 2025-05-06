@@ -24,14 +24,6 @@ Assurez-vous que **Node.js** est installé sur votre machine (Windows, Linux, et
 
 Vous pouvez le télécharger depuis [nodejs.org](https://nodejs.org/).
 
-### Installation d'une dépendance
-
-Pour installer une dépendance, utilisez la commande suivante dans le terminal à la racine de votre projet :
-
-```bash
-npm install -g @angular/cli
-```
-
 ### Vérification de l'installation
 Ouvrez un terminal et exécutez les commandes suivantes pour vérifier que Node.js et npm sont installés correctement :
 
@@ -42,6 +34,14 @@ ng --version
 ```
 
 Si les versions s'affichent, cela signifie que l'installation a réussi.
+
+### Installation d'une dépendance
+
+Pour installer une dépendance, utilisez la commande suivante dans le terminal à la racine de votre projet :
+
+```bash
+npm install
+```
 
 ### Lancer l'application
 
