@@ -116,7 +116,6 @@
                             <workingDirectory>../frontend</workingDirectory>
                         </configuration>
                     </execution>
-
                     <execution>
                         <id>copy dist to webapp</id>
                         <goals><goal>npm</goal></goals>

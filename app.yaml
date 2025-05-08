@@ -1,0 +1,14 @@
+runtime: java17
+
+instance_class: F2
+
+env_variables:
+  SPRING_PROFILES_ACTIVE: prod
+
+handlers:
+  - url: /api/*
+    script: auto
+
+  - url: /.*
+    static_files: /frontend/dist/tiny-pet-app/index.html
+    upload: /frontend/dist/tiny-pet-app/.*

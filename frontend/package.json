@@ -7,8 +7,7 @@
     "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "copy:dist": "rm -rf ../backend/src/main/webapp/frontend && mkdir -p ../backend/src/main/webapp/frontend && cp -r dist/tiny-pet-app/* ../backend/src/main/webapp/frontend/"
-
+    "copy:dist": "powershell -Command \"if (Test-Path '../backend/src/main/webapp/frontend') { Remove-Item -Recurse -Force '../backend/src/main/webapp/frontend' }; New-Item -ItemType Directory -Path '../backend/src/main/webapp/frontend'; Copy-Item -Recurse -Force 'dist/tiny-pet-app/*' '../backend/src/main/webapp/frontend/'\""
   },
   "private": true,
   "dependencies": {

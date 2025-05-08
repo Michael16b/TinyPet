@@ -50,18 +50,6 @@
                             <arguments>run build -- --verbose --output-path=../backend/src/main/resources/static --configuration=production</arguments>
                         </configuration>
                     </execution>
-
-<!--                  <execution>-->
-<!--                    <id>npm start</id>-->
-<!--                    <goals>-->
-<!--                      <goal>npm</goal>-->
-<!--                    </goals>-->
-<!--                    <phase>pre-integration-test</phase>-->
-<!--                    <configuration>-->
-<!--                      <arguments>start</arguments>-->
-<!--                    </configuration>-->
-<!--                  </execution>-->
-
                 </executions>
             </plugin>
         </plugins>

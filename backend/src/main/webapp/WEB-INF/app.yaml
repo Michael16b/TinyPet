@@ -1,1 +1,7 @@
-runtime: java17
+application: tinypet-atalla-besily-jan        # votre ID de projet GCP
+runtime: java17                               # runtime Gen2
+service: default                              # nom du service (optionnel, défaut = default)
+
+handlers:
+  - url: /.*
+    static_dir: frontend/browser

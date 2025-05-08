@@ -40,23 +40,23 @@
 <!--                        </configuration>-->
 <!--                    </execution>-->
 
-                    <execution>
-                        <id>start-frontend</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>npm</executable>
-                            <workingDirectory>${project.basedir}/frontend</workingDirectory>
-                            <arguments>
-                                <argument>start</argument>
-                                <argument>--</argument>
-                                <argument>--port=8090</argument>
-                            </arguments>
-                            <async>true</async>
-                        </configuration>
-                    </execution>
+<!--                    <execution>-->
+<!--                        <id>start-frontend</id>-->
+<!--                        <phase>pre-integration-test</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>exec</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <executable>npm</executable>-->
+<!--                            <workingDirectory>${project.basedir}/frontend</workingDirectory>-->
+<!--                            <arguments>-->
+<!--                                <argument>start</argument>-->
+<!--                                <argument>&#45;&#45;</argument>-->
+<!--                                <argument>&#45;&#45;port=8090</argument>-->
+<!--                            </arguments>-->
+<!--                            <async>true</async>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
                 </executions>
             </plugin>
 

@@ -19,34 +19,28 @@ L'application sera développée en tant qu'application **Google App Engine**, av
 
 ## Installation
 
-### Prérequis
-Assurez-vous que **Node.js** est installé sur votre machine (Windows, Linux, etc.).
+## Prérequis
 
-Vous pouvez le télécharger depuis [nodejs.org](https://nodejs.org/).
+Assurez-vous que **Maven** est installé sur votre machine.  
+Vous pouvez soit :
 
-### Vérification de l'installation
-Ouvrez un terminal et exécutez les commandes suivantes pour vérifier que Node.js et npm sont installés correctement :
+- Installer Maven manuellement : [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi)
+- Ou utiliser **IntelliJ IDEA**, qui installe et configure Maven automatiquement si nécessaire.
+
+## Compilation du projet
+
+Depuis un terminal ouvert à la racine du projet, exécutez la commande suivante :
 
 ```bash
-node --version
-npm --version
-ng --version
+mvn package
 ```
 
-Si les versions s'affichent, cela signifie que l'installation a réussi.
+Cela va compiler et packager l'ensemble du projet.
 
-### Installation d'une dépendance
+## Lancement du backend en local
 
-Pour installer une dépendance, utilisez la commande suivante dans le terminal à la racine de votre projet :
-
-```bash
-npm install
-```
-
-### Lancer l'application
-
-Pour lancer l'application, exécutez la commande suivante dans le terminal à la racine de votre projet :
+Naviguez dans le dossier /backend, puis lancez la commande suivante :
 
 ```bash
-npm start
+mvn appengine:run
 ```
