@@ -3,6 +3,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+
+backend/src/main/resources/
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml
