@@ -7,7 +7,7 @@
     "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "copy:dist": "rimraf ../backend/src/main/webapp/frontend && mkdir -p ../backend/src/main/webapp/frontend && cpy \"dist/tiny-pet-app/**/*\" ../backend/src/main/webapp/frontend --parents"
+    "copy:dist": "rimraf ../backend/src/main/webapp/frontend && shx mkdir -p ../backend/src/main/webapp/frontend && cpy \"dist/tiny-pet-app/**/*\" ../backend/src/main/webapp/frontend"
   },
   "private": true,
   "dependencies": {
@@ -35,6 +35,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "rimraf": "^6.0.1",
+    "shx": "^0.4.0",
     "typescript": "~5.7.2"
   }
 }
