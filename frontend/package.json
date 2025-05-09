@@ -7,7 +7,7 @@
     "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "copy:dist": "powershell -Command \"if (Test-Path '../backend/src/main/webapp/frontend') { Remove-Item -Recurse -Force '../backend/src/main/webapp/frontend' }; New-Item -ItemType Directory -Path '../backend/src/main/webapp/frontend'; Copy-Item -Recurse -Force 'dist/tiny-pet-app/*' '../backend/src/main/webapp/frontend/'\""
+    "copy:dist": "rimraf ../backend/src/main/webapp/frontend && mkdir -p ../backend/src/main/webapp/frontend && cpy \"dist/tiny-pet-app/**/*\" ../backend/src/main/webapp/frontend --parents"
   },
   "private": true,
   "dependencies": {
@@ -27,12 +27,14 @@
     "@angular/cli": "^19.2.10",
     "@angular/compiler-cli": "^19.2.0",
     "@types/jasmine": "~5.1.0",
+    "cpy-cli": "^5.0.0",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.7.2"
   }
 }
