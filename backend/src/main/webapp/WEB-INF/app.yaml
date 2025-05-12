@@ -1,6 +1,6 @@
-application: tinypet-atalla-besily-jan        # votre ID de projet GCP
-runtime: java17                               # runtime Gen2
-service: default                              # nom du service (optionnel, défaut = default)
+application: tinypet-atalla-besily-jan
+runtime: java17
+service: default
 
 handlers:
   - url: /.*
