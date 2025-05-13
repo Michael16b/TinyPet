@@ -3,5 +3,5 @@
     <application>tinypet-atalla-besily-jan</application>
     <runtime>java17</runtime>
     <threadsafe>false</threadsafe>
-    <sessions-enabled>false</sessions-enabled>
+    <sessions-enabled>true</sessions-enabled>
 </appengine-web-app>

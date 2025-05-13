@@ -70,7 +70,7 @@
                 <artifactId>appengine-maven-plugin</artifactId>
                 <version>2.4.4</version>
                 <configuration>
-                    <projectId>GCLOUD_CONFIG</projectId>
+                    <projectId>tinypet-atalla-besily-jan</projectId>
                     <version>GCLOUD_CONFIG</version>
                 </configuration>
             </plugin>
@@ -83,7 +83,6 @@
                     <hostname>${endpoints.project.id}.appspot.com</hostname>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
@@ -97,7 +96,6 @@
                             <npmVersion>9.8.1</npmVersion>
                         </configuration>
                     </execution>
-
                     <execution>
                         <id>npm install</id>
                         <goals><goal>npm</goal></goals>
@@ -106,23 +104,38 @@
                             <workingDirectory>../frontend</workingDirectory>
                         </configuration>
                     </execution>
-
                     <execution>
-                        <id>npm run build</id>
-                        <goals><goal>npm</goal></goals>
-                        <phase>generate-resources</phase>
+                        <id>ng build</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
                         <configuration>
-                            <arguments>run build -- --configuration production</arguments>
+                            <arguments>run build</arguments>
                             <workingDirectory>../frontend</workingDirectory>
                         </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy dist to webapp</id>
-                        <goals><goal>npm</goal></goals>
                         <phase>generate-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-angular-dist</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
                         <configuration>
-                            <arguments>run copy:dist</arguments>
-                            <workingDirectory>../frontend</workingDirectory>
+                            <target>
+                                <copy todir="${project.basedir}/src/main/webapp/">
+                                    <fileset dir="${project.basedir}/../frontend/dist/tiny-pet-app/browser/">
+                                        <include name="**/*"/>
+                                    </fileset>
+                                </copy>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
