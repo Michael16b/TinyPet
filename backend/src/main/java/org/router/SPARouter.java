@@ -20,8 +20,7 @@ public class SPARouter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
         String path = request.getRequestURI();
 
-        // Si la requête n'est pas pour une ressource statique ni une API
-        if (!path.startsWith("/api") && !path.contains(".") && !path.startsWith("/assets")) {
+        if (!path.startsWith("/api") && !path.matches(".*\\.[a-zA-Z0-9]+$") && !path.startsWith("/assets")) {
             request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
