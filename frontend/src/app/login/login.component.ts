@@ -3,6 +3,7 @@ import {jwtDecode} from 'jwt-decode';
 import {GoogleJwtPayload} from '../interfaces/google-jwt-payload';
 import {CookiesService} from '../services/cookies.service';
 import {UserService} from '../services/user.service';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +15,7 @@ export class LoginComponent implements AfterViewInit {
   constructor(
     private readonly userService: UserService,
   ) {
-  }
+    }
   ngAfterViewInit(): void {
     const google = (window as any).google;
     if (google && google.accounts) {
@@ -47,6 +48,6 @@ export class LoginComponent implements AfterViewInit {
       responsePayload.family_name,
       responsePayload.picture,
       responsePayload.email);
-
   }
+
 }
