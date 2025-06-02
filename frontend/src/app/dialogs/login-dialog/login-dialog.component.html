@@ -1,0 +1,74 @@
+<h2 mat-dialog-title class="fw-bold d-flex align-items-center">
+  <i class="fas fa-user-circle text-primary me-2"></i>
+  Connexion
+  <button type="button" mat-dialog-close class="btn-close ms-auto" aria-label="Fermer"></button>
+</h2>
+
+<mat-dialog-content class="mat-typography login-dialog-content">
+  <div class="mb-4 text-center">
+    <p class="mb-2 fs-6 text-muted">Connectez-vous pour accéder à toutes les fonctionnalités de TinyPet.</p>
+  </div>
+  <div class="login-google-box d-flex flex-column align-items-center mb-3 p-3">
+    <p class="mb-1 fw-semibold text-primary"><i class="fab fa-google me-1"></i> Connexion rapide avec Google</p>
+    <div id="googleSignInButton"></div>
+  </div>
+  <div class="divider-login mb-3"><span>ou</span></div>
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
+    <div class="mb-3">
+      <label class="form-label fw-semibold" for="loginEmail">
+        <i class="fas fa-envelope me-2 text-secondary"></i>
+        Email
+      </label>
+      <input
+        id="loginEmail"
+        class="form-control"
+        type="email"
+        formControlName="email"
+        required
+        autocomplete="username"
+        placeholder="Adresse email"
+      />
+      <div class="form-text text-danger" *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">
+        L'email est requis
+      </div>
+      <div class="form-text text-danger" *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched">
+        Email invalide
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold" for="loginPassword">
+        <i class="fas fa-lock me-2 text-secondary"></i>
+        Mot de passe
+      </label>
+      <input
+        id="loginPassword"
+        class="form-control"
+        type="password"
+        formControlName="password"
+        required
+        autocomplete="current-password"
+        placeholder="Mot de passe"
+      />
+      <div class="form-text text-danger" *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
+        Le mot de passe est requis
+      </div>
+    </div>
+    <div *ngIf="error" class="alert alert-danger py-2 my-2 text-center">{{ error }}</div>
+    <mat-dialog-actions align="end" class="pt-0 pb-1">
+      <button mat-button class="btn btn-outline-secondary me-2" mat-dialog-close>
+        <i class="fas fa-times me-1"></i> Annuler
+      </button>
+      <button
+        mat-button
+        color="primary"
+        class="btn btn-petition"
+        [disabled]="loading || loginForm.invalid"
+        type="submit"
+        cdkFocusInitial
+      >
+        <i class="fas fa-sign-in-alt me-1"></i> Se connecter
+        <mat-progress-spinner *ngIf="loading" diameter="18" mode="indeterminate"></mat-progress-spinner>
+      </button>
+    </mat-dialog-actions>
+  </form>
+</mat-dialog-content>

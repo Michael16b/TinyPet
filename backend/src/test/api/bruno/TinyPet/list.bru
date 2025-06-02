@@ -1,0 +1,15 @@
+meta {
+  name: list
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/_ah/api/petitionApi/v1/list?access_token=TON_TOKEN
+  body: none
+  auth: inherit
+}
+
+params:query {
+  access_token: TON_TOKEN
+}

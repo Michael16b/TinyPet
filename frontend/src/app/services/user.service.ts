@@ -5,30 +5,32 @@ import { CookiesService } from './cookies.service';
   providedIn: 'root',
 })
 export class UserService {
-  constructor(private readonly cookiesService: CookiesService) {}
+  constructor() {}
 
-  login(id: string, name: string, family_name: string, picture: string, email: string): void {
-    this.cookiesService.setCookie('id_user', id);
-    this.cookiesService.setCookie('name', name);
-    this.cookiesService.setCookie('family_name', family_name);
-    this.cookiesService.setCookie('picture', picture);
-    this.cookiesService.setCookie('email', email);
-
+  login(id: string, access_token: string, name: string, family_name: string, picture: string, email: string): void {
+    localStorage.setItem('id_user', id);
+    localStorage.setItem('access_token', access_token);
+    localStorage.setItem('name', name);
+    localStorage.setItem('family_name', family_name);
+    localStorage.setItem('picture', picture);
+    localStorage.setItem('email', email);
   }
 
   logout(): void {
-    this.cookiesService.deleteCookie('id_user');
-    this.cookiesService.deleteCookie('name');
-    this.cookiesService.deleteCookie('family_name');
-    this.cookiesService.deleteCookie('picture');
-    this.cookiesService.deleteCookie('email');
+    localStorage.removeItem('id_user');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('name');
+    localStorage.removeItem('family_name');
+    localStorage.removeItem('picture');
+    localStorage.removeItem('email');
   }
 
   isUserLoggedIn(): boolean {
-    const idUser = this.cookiesService.getCookie('id_user');
-    const username = this.cookiesService.getCookie('username');
-    const email = this.cookiesService.getCookie('email');
+    const idUser = localStorage.getItem('id_user');
+    const username = localStorage.getItem('name');
+    const email = localStorage.getItem('email');
 
     return !!(idUser && username && email);
   }
+
 }

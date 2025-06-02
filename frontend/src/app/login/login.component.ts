@@ -44,6 +44,7 @@ export class LoginComponent implements AfterViewInit {
 
     this.userService.login(
       responsePayload.id,
+      response.credential,
       responsePayload.name,
       responsePayload.family_name,
       responsePayload.picture,

@@ -1,0 +1,31 @@
+.btn-petition {
+  background: #8a3ffc !important;    /* Couleur principale */
+  color: #fff !important;
+  border: none;
+  transition: background 0.2s, opacity 0.2s;
+}
+.btn-petition:hover:enabled, .btn-petition:focus:enabled {
+  background: #6929c4 !important;
+  color: #fff !important;
+}
+.btn-petition:disabled,
+.btn-petition[disabled] {
+  background: #b0b0b0 !important;    /* Gris neutre pour désactivé */
+  color: #fff !important;
+  opacity: 1 !important;             /* Garde le texte lisible */
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-outline-secondary {
+  color: #b0004b !important;
+  border-color: #b0004b !important;
+  background: transparent !important;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background: #fbeaf4 !important;   /* Rose pâle au hover */
+  color: #b0004b !important;
+  border-color: #b0004b !important;
+}
