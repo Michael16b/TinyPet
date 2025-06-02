@@ -29,6 +29,8 @@ Vous pouvez soit :
 
 ## Compilation du projet
 
+
+A REVOIR
 Depuis un terminal ouvert à la racine du projet, exécutez la commande suivante :
 
 ```bash
