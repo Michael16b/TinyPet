@@ -1,0 +1,110 @@
+<h2 mat-dialog-title class="fw-bold d-flex align-items-center">
+  <i class="fas fa-pen text-primary me-2"></i>
+  Créer une pétition
+  <button type="button" mat-dialog-close class="btn-close ms-auto" aria-label="Fermer"></button>
+</h2>
+
+<mat-dialog-content class="mat-typography petition-dialog-content">
+  <form #petitionForm="ngForm" class="d-flex flex-column h-100" (ngSubmit)="onCreate()" autocomplete="off">
+    <!-- Titre -->
+    <div class="mb-4">
+      <label for="petitionTitle" class="form-label fw-semibold">
+        <i class="fas fa-heading me-2 text-secondary"></i>
+        Titre de la pétition
+      </label>
+      <mat-form-field class="w-100" appearance="outline">
+        <input
+          matInput
+          id="petitionTitle"
+          [(ngModel)]="title"
+          name="title"
+          required
+          maxlength="100"
+          placeholder="Ex : Pour un parc plus vert dans notre ville"
+          autocomplete="off"
+        />
+      </mat-form-field>
+    </div>
+
+    <!-- Description -->
+    <div class="mb-4 flex-grow-1 d-flex flex-column">
+      <label for="petitionDescription" class="form-label fw-semibold">
+        <i class="fas fa-align-left me-2 text-secondary"></i>
+        Description
+      </label>
+      <mat-form-field class="w-100 flex-grow-1" appearance="outline">
+        <textarea
+          matInput
+          id="petitionDescription"
+          [(ngModel)]="description"
+          name="description"
+          required
+          maxlength="1000"
+          style="min-height: 180px;"
+          placeholder="Décrivez votre cause, pourquoi elle est importante, et ce que vous souhaitez obtenir…"
+          autocomplete="off"
+        ></textarea>
+      </mat-form-field>
+    </div>
+
+    <!-- Tags -->
+    <div class="mb-4">
+      <label class="form-label fw-semibold">
+        <i class="fas fa-tags me-2 text-secondary"></i>
+        Tags
+      </label>
+      <mat-form-field>
+        <mat-chip-grid #chipGrid>
+          <mat-chip-row *ngFor="let tag of selectedTags" (removed)="removeTag(tag)">
+            {{ tag }}
+            <button matChipRemove aria-label="Supprimer le tag">
+              <i class="fas fa-times"></i>
+            </button>
+          </mat-chip-row>
+        </mat-chip-grid>
+        <input
+          [matChipInputFor]="chipGrid"
+          [matAutocomplete]="auto"
+          [(ngModel)]="tagInput"
+          (matChipInputTokenEnd)="addTagFromInput($event)"
+          name="tagInput"
+          autocomplete="off"
+        />
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectTag($event)">
+          <mat-option *ngFor="let tag of filteredTags" [value]="tag">
+            {{ tag }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+
+    <!-- Date -->
+    <div class="mb-4">
+      <label class="form-label fw-semibold">
+        <i class="fas fa-calendar-alt me-2 text-secondary"></i>
+        Date de la pétition
+      </label>
+<!--      <mat-form-field class="w-100" appearance="outline">-->
+<!--        <mat-label>Choose a date</mat-label>-->
+<!--        <input matInput [matDatepicker]="picker">-->
+<!--        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>-->
+<!--        <mat-datepicker #picker></mat-datepicker>-->
+<!--      </mat-form-field>-->
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="petition-dialog-actions">
+  <button mat-button class="btn btn-outline-secondary me-2" mat-dialog-close>
+    <i class="fas fa-times me-1"></i> Annuler
+  </button>
+  <button
+    mat-button
+    class="btn btn-petition"
+    [disabled]="!title || !description || selectedTags.length === 0 || !petitionDate"
+    (click)="onCreate()"
+    cdkFocusInitial
+  >
+    <i class="fas fa-paper-plane me-1"></i>Créer la pétition
+  </button>
+</mat-dialog-actions>

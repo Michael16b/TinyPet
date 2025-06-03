@@ -34,13 +34,13 @@ public class PetitionEndpoint {
             @Named("access_token") String token
     ) throws Exception {
 
-        Entity user = checkAuth(token);
+        //Entity user = checkAuth(token);
 
         Entity petition = new Entity("Petition");
         petition.setProperty("title", title);
         petition.setProperty("content", content);
         petition.setProperty("tags", tags);
-        petition.setProperty("creatorEmail", user.getKey().getName());
+        //petition.setProperty("creatorEmail", user.getKey().getName());
         petition.setProperty("creationDate", new Date());
         petition.setProperty("signatureCount", 0L);
 
@@ -55,7 +55,7 @@ public class PetitionEndpoint {
 
     @ApiMethod(name = "list", httpMethod = "get", path = "list")
     public List<Entity> list(@Named("access_token") String token) throws Exception {
-        checkAuth(token);
+        //checkAuth(token);
         Query query = new Query("Petition").addSort("creationDate", Query.SortDirection.DESCENDING);
         PreparedQuery pq = datastore.prepare(query);
         return pq.asList(FetchOptions.Builder.withLimit(100));
