@@ -1,11 +1,44 @@
 indexes:
-- kind: Friend 
-  properties: 
-    - name: friends 
-    - name: age 
-- kind: Score
-  properties:
-  - name: name
-  - name: score
-    direction: desc
+
+  # Petitions triées par date
+  - kind: Petition
+    properties:
+      - name: creationDate
+        direction: desc
+
+  # Recherche par tags
+  - kind: Petition
+    properties:
+      - name: tags
+      - name: creationDate
+        direction: desc
+
+  # Classement populaire
+  - kind: Petition
+    properties:
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+  # Vérifier si un utilisateur a déjà signé
+  - kind: Signature
+    properties:
+      - name: petitionId
+      - name: userEmail
+
+  # Liste des signataires d'une pétition
+  - kind: Signature
+    properties:
+      - name: petitionId
+      - name: signatureDate
+        direction: desc
+
+  # Liste des pétitions signées par un utilisateur
+  - kind: Signature
+    properties:
+      - name: userEmail
+      - name: signatureDate
+        direction: desc
+
     
