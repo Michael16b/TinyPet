@@ -38,3 +38,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/backend/src/main/webapp/media/
+/backend/src/main/webapp/favicon.ico
+/backend/src/main/webapp/index.html
+/backend/src/main/webapp/polyfills-FFHMD2TL.js
+/backend/src/main/webapp/styles-B37BEE3B.css
+/backend/src/main/webapp/styles-JGX4B2HB.css
