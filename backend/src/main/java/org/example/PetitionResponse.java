@@ -4,11 +4,9 @@ import java.util.List;
 import com.google.appengine.api.datastore.Entity;
 
 public class PetitionResponse {
-    public String status;
-    public String message;
-    public Long petitionId;
-    private List<Entity> entities;
-    private String nextCursor;
+    private String status;
+    private String message;
+    private Long petitionId;
 
     public PetitionResponse() {}
 
@@ -18,19 +16,13 @@ public class PetitionResponse {
         this.petitionId = petitionId;
     }
 
-    public List<Entity> getEntities() {
-        return entities;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public void setEntities(List<Entity> entities) {
-        this.entities = entities;
-    }
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
 
-    public String getNextCursor() {
-        return nextCursor;
-    }
-
-    public void setNextCursor(String nextCursor) {
-        this.nextCursor = nextCursor;
-    }
+    public Long getPetitionId() { return petitionId; }
+    public void setPetitionId(Long petitionId) { this.petitionId = petitionId; }
 }
+

@@ -1,11 +1,4 @@
 indexes:
-
-  # Petitions triées par date
-  - kind: Petition
-    properties:
-      - name: creationDate
-        direction: desc
-
   # Recherche par tags
   - kind: Petition
     properties:
@@ -27,18 +20,18 @@ indexes:
       - name: petitionId
       - name: userEmail
 
-  # Liste des signataires d'une pétition
+# Liste des signataires d'une pétition
   - kind: Signature
     properties:
       - name: petitionId
-      - name: signatureDate
+      - name: signedAt
         direction: desc
 
   # Liste des pétitions signées par un utilisateur
   - kind: Signature
     properties:
       - name: userEmail
-      - name: signatureDate
+      - name: signedAt
         direction: desc
 
     
