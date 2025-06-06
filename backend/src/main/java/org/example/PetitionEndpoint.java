@@ -50,6 +50,7 @@ public class PetitionEndpoint {
 
     // Ton CLIENT_ID Google (remplace-le par le tien si besoin)
     private static final String CLIENT_ID = "598050199229-8svis83vs9bug6d5tpjqjta3jnbusdan.apps.googleusercontent.com";
+    private static final int NUM_SHARDS = 10;
 
     private GoogleIdToken.Payload verifyToken(String idTokenString) throws UnauthorizedException {
         try {
@@ -89,6 +90,28 @@ private void ensureUserExists(GoogleIdToken.Payload payload) {
     }
 }
 
+private void initializeCounterShards(long petitionId) {
+    for (int i = 0; i < NUM_SHARDS; i++) {
+        String shardId = petitionId + "-shard-" + i;
+        Entity shard = new Entity("SignatureCounterShard", shardId);
+        shard.setProperty("petitionId", petitionId);
+        shard.setProperty("count", 0L);
+        datastore.put(shard);
+    }
+}
+
+private long getSignatureCount(long petitionId) {
+    Query query = new Query("SignatureCounterShard")
+            .setFilter(new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId));
+    List<Entity> shards = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+    long total = 0;
+    for (Entity shard : shards) {
+        total += (Long) shard.getProperty("count");
+    }
+    return total;
+}
+
+
 
 @ApiMethod(name = "create", httpMethod = "post", path = "create")
 public PetitionResponse create(
@@ -120,8 +143,9 @@ public PetitionResponse create(
     petition.setProperty("signatureCount", 0L);
 
     datastore.put(petition);
+    initializeCounterShards(petition.getKey().getId());
 
-    logger.info("✅ Création pétition réussie par " + firstName + " " + lastName);
+    logger.info("Création pétition réussie par " + firstName + " " + lastName);
 
     return new PetitionResponse(
             "success",
@@ -180,16 +204,37 @@ public PetitionResponse sign(
     datastore.put(signature);
 
     // Incrémente le compteur de signatures
+    int shardIndex = (int) (Math.random() * NUM_SHARDS);
+    String shardId = petitionId + "-shard-" + shardIndex;
+
     Transaction txn = datastore.beginTransaction();
     try {
-        Entity petition = datastore.get(petitionKey);
-        long count = (Long) petition.getProperty("signatureCount");
-        petition.setProperty("signatureCount", count + 1);
-        datastore.put(petition);
+        Entity shard;
+        try {
+            shard = datastore.get(txn, KeyFactory.createKey("SignatureCounterShard", shardId));
+        } catch (EntityNotFoundException e) {
+            shard = new Entity("SignatureCounterShard", shardId);
+            shard.setProperty("petitionId", petitionId);
+            shard.setProperty("count", 0L);
+        }
+        long count = (Long) shard.getProperty("count");
+        shard.setProperty("count", count + 1);
+        datastore.put(txn, shard);
         txn.commit();
     } finally {
         if (txn.isActive()) txn.rollback();
     }
+Transaction countTxn = datastore.beginTransaction();
+try {
+    Entity petition = datastore.get(countTxn, petitionKey);
+    long currentCount = (Long) petition.getProperty("signatureCount");
+    petition.setProperty("signatureCount", currentCount + 1);
+    datastore.put(countTxn, petition);
+    countTxn.commit();
+} finally {
+    if (countTxn.isActive()) countTxn.rollback();
+}
+
 
     return new PetitionResponse("success", "Petition signed successfully.", petitionId);
 }
@@ -213,7 +258,8 @@ public SignersResponse getSigners(
         signers.add(new SignerInfo(sig));
     }
 
-    long totalSignatures = signers.size();
+    long totalSignatures = getSignatureCount(petitionId);
+
 
     return new SignersResponse(totalSignatures, signers);
 }
