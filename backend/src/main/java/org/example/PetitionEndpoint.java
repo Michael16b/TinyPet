@@ -90,65 +90,77 @@ private void ensureUserExists(GoogleIdToken.Payload payload) {
 }
 
 
-    @ApiMethod(name = "create", httpMethod = "post", path = "create")
-    public PetitionResponse create(
-            @Named("title") String title,
-            @Named("content") String content,
-            @Named("tags") List<String> tags,
-            @Named("access_token") String token
-    ) throws Exception {
+@ApiMethod(name = "create", httpMethod = "post", path = "create")
+public PetitionResponse create(
+        @Named("title") String title,
+        @Named("content") String content,
+        @Named("tags") List<String> tags,
+        @Named("access_token") String token
+) throws Exception {
 
-        GoogleIdToken.Payload payload = verifyToken(token);
-        ensureUserExists(payload);
-        String userEmail = payload.getEmail(); // Peut être utilisé plus tard pour lier au créateur
-        String userId = payload.getSubject(); // ID Google unique de l'utilisateur
+    GoogleIdToken.Payload payload = verifyToken(token);
+    ensureUserExists(payload);
 
-        Entity petition = new Entity("Petition");
-        petition.setProperty("title", title);
-        petition.setProperty("content", content);
-        petition.setProperty("tags", tags);
-        petition.setProperty("creatorEmail", userEmail);
-        petition.setProperty("creatorId", userId);
-        petition.setProperty("creationDate", new Date());
-        petition.setProperty("signatureCount", 0L);
+    String userEmail = payload.getEmail();
+    String userId = payload.getSubject();
 
-        datastore.put(petition);
-        logger.info("La création de la pétition a réussi !");
-        return new PetitionResponse(
-                "success",
-                "Petition created successfully",
-                petition.getKey().getId()
-        );
-    }
+    // ✅ Ajout nom/prénom
+    String firstName = payload.get("given_name") != null ? payload.get("given_name").toString() : "";
+    String lastName = payload.get("family_name") != null ? payload.get("family_name").toString() : "";
 
-    @ApiMethod(name = "list", httpMethod = "get", path = "list")
+    Entity petition = new Entity("Petition");
+    petition.setProperty("title", title);
+    petition.setProperty("content", content);
+    petition.setProperty("tags", tags);
+    petition.setProperty("creatorEmail", userEmail);
+    petition.setProperty("creatorId", userId);
+    petition.setProperty("creatorFirstName", firstName);
+    petition.setProperty("creatorLastName", lastName);
+    petition.setProperty("creationDate", new Date());
+    petition.setProperty("signatureCount", 0L);
+
+    datastore.put(petition);
+
+    logger.info("✅ Création pétition réussie par " + firstName + " " + lastName);
+
+    return new PetitionResponse(
+            "success",
+            "Petition created successfully",
+            petition.getKey().getId()
+    );
+}
+
+
+@ApiMethod(name = "list", httpMethod = "get", path = "list")
 public List<EmbeddedPetition> list(@Named("access_token") String token) throws Exception {
-    verifyToken(token);
+    verifyToken(token); // tu peux aussi le retirer si list est publique
+
     Query query = new Query("Petition").addSort("creationDate", Query.SortDirection.DESCENDING);
     List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(100));
     List<EmbeddedPetition> result = new ArrayList<>();
 
     for (Entity petition : petitionEntities) {
-        String creatorId = (String) petition.getProperty("creatorId");
-        Entity user = datastore.get(KeyFactory.createKey("User", creatorId));
-        result.add(new EmbeddedPetition(petition, user));
+        result.add(new EmbeddedPetition(petition));
     }
 
     return result;
 }
 
-
-    @ApiMethod(name = "sign", httpMethod = "post", path = "sign")
+@ApiMethod(name = "sign", httpMethod = "post", path = "sign")
 public PetitionResponse sign(
         @Named("petitionId") long petitionId,
         @Named("access_token") String token
 ) throws Exception {
     GoogleIdToken.Payload payload = verifyToken(token);
     ensureUserExists(payload);
+
     String userEmail = payload.getEmail();
+    String firstName = payload.get("given_name") != null ? payload.get("given_name").toString() : "";
+    String lastName = payload.get("family_name") != null ? payload.get("family_name").toString() : "";
+
+    Key petitionKey = KeyFactory.createKey("Petition", petitionId);
 
     // Vérifie si la personne a déjà signé
-    Key petitionKey = KeyFactory.createKey("Petition", petitionId);
     Query query = new Query("Signature")
             .setFilter(Query.CompositeFilterOperator.and(
                     new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId),
@@ -158,14 +170,16 @@ public PetitionResponse sign(
         return new PetitionResponse("already_signed", "You have already signed this petition.", petitionId);
     }
 
-    // Enregistre la signature
+    // Enregistre la signature avec nom/prénom
     Entity signature = new Entity("Signature");
     signature.setProperty("petitionId", petitionId);
     signature.setProperty("userEmail", userEmail);
     signature.setProperty("signedAt", new Date());
+    signature.setProperty("firstName", firstName);
+    signature.setProperty("lastName", lastName);
     datastore.put(signature);
 
-    // Incrémente le compteur
+    // Incrémente le compteur de signatures
     Transaction txn = datastore.beginTransaction();
     try {
         Entity petition = datastore.get(petitionKey);
@@ -179,63 +193,32 @@ public PetitionResponse sign(
 
     return new PetitionResponse("success", "Petition signed successfully.", petitionId);
 }
-@ApiMethod(name = "signedPetitions", httpMethod = "get", path = "signed")
-public List<Entity> signedPetitions(@Named("access_token") String token) throws Exception {
-    GoogleIdToken.Payload payload = verifyToken(token);
-    String userEmail = payload.getEmail();
 
-    // Récupère toutes les signatures de l'utilisateur
-    Query signatureQuery = new Query("Signature")
-            .setFilter(new Query.FilterPredicate("userEmail", Query.FilterOperator.EQUAL, userEmail))
-            .addSort("signedAt", Query.SortDirection.DESCENDING);
-
-    List<Entity> signatures = datastore.prepare(signatureQuery).asList(FetchOptions.Builder.withLimit(100));
-    List<Entity> petitions = new java.util.ArrayList<>();
-
-    for (Entity sig : signatures) {
-        long petitionId = (Long) sig.getProperty("petitionId");
-        Key petitionKey = KeyFactory.createKey("Petition", petitionId);
-        try {
-            petitions.add(datastore.get(petitionKey));
-        } catch (EntityNotFoundException e) {
-            // Ignore missing petitions
-        }
-    }
-    return petitions;
-}
-@ApiMethod(name = "popularPetitions", httpMethod = "get", path = "popular")
-public List<Entity> popularPetitions(@Named("access_token") String token) throws Exception {
-    verifyToken(token);
-    Query query = new Query("Petition")
-            .addSort("signatureCount", Query.SortDirection.DESCENDING)
-            .addSort("creationDate", Query.SortDirection.DESCENDING);
-
-    return datastore.prepare(query).asList(FetchOptions.Builder.withLimit(100));
-}
-@ApiMethod(name = "searchByTag", httpMethod = "get", path = "search")
-public List<Entity> searchByTag(
-        @Named("tag") String tag,
-        @Named("access_token") String token
-) throws Exception {
-    verifyToken(token);
-    Query.Filter tagFilter = new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag);
-    Query query = new Query("Petition")
-            .setFilter(tagFilter)
-            .addSort("creationDate", Query.SortDirection.DESCENDING);
-
-    return datastore.prepare(query).asList(FetchOptions.Builder.withLimit(100));
-}
-@ApiMethod(name = "listSigners", httpMethod = "get", path = "signers")
-public List<Entity> listSigners(
+@ApiMethod(name = "getSigners", httpMethod = "get", path = "petition/{petitionId}/signers")
+public SignersResponse getSigners(
         @Named("petitionId") long petitionId,
         @Named("access_token") String token
 ) throws Exception {
-    verifyToken(token);
+    verifyToken(token); // ou rends-le public
+
+    // Requête pour les signatures de cette pétition
     Query query = new Query("Signature")
             .setFilter(new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId))
             .addSort("signedAt", Query.SortDirection.DESCENDING);
 
-    return datastore.prepare(query).asList(FetchOptions.Builder.withLimit(100));
+    List<Entity> signatureEntities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+    List<SignerInfo> signers = new ArrayList<>();
+
+    for (Entity sig : signatureEntities) {
+        signers.add(new SignerInfo(sig));
+    }
+
+    long totalSignatures = signers.size();
+
+    return new SignersResponse(totalSignatures, signers);
 }
+
+
+
 
 }
