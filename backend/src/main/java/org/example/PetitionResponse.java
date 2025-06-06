@@ -10,6 +10,7 @@ public class PetitionResponse {
     private List<EmbeddedPetition> entities;
     private String nextCursor;
 
+
     public PetitionResponse() {}
 
     public PetitionResponse(String status, String message, Long petitionId) {
