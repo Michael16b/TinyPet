@@ -25,6 +25,13 @@ export class UserService {
     localStorage.removeItem('email');
   }
 
+  getAccessToken(): string | null {
+    return localStorage.getItem('access_token');
+  }
+
+
+
+
   isUserLoggedIn(): boolean {
     const idUser = localStorage.getItem('id_user');
     const username = localStorage.getItem('name');

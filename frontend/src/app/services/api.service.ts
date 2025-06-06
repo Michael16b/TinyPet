@@ -1,14 +1,35 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../environments/environment'; // ou ton chemin vers environment
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class ApiService {
-  // private baseUrl = environment.apiUrl; // définie dans tes fichiers d'env
-  //
-  // constructor(private http: HttpClient) {}
-  //
-  // envoyerPetition(data: any) {
-  //   return this.http.post(`${this.baseUrl}/petition`, data);
-  // }
+  private baseUrl: string = window.location.protocol + "//" + window.location.host;
+
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
+  setBaseUrl(url: string): void {
+    this.baseUrl = url;
+  }
+
+  async sendPetition(petitionData: any): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/_ah/api/petitionApi/v1/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(petitionData),
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('There was a problem with the fetch operation:', error);
+      throw error;
+    }
+  }
 }

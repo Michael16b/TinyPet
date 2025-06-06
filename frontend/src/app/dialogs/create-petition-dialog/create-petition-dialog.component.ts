@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, computed, inject, model, OnInit, signal} from '@angular/core';
 import {
   MatDialogActions,
   MatDialogClose,
@@ -22,7 +22,10 @@ import {
   MatAutocompleteTrigger,
   MatOption
 } from '@angular/material/autocomplete';
-import {MatChip, MatChipGrid, MatChipInput, MatChipRow} from '@angular/material/chips';
+import {MatChip, MatChipGrid, MatChipInput, MatChipInputEvent, MatChipRow} from '@angular/material/chips';
+import {UserService} from '../../services/user.service';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
+import {MatIcon} from '@angular/material/icon';
 
 
 @Component({
@@ -34,11 +37,7 @@ import {MatChip, MatChipGrid, MatChipInput, MatChipRow} from '@angular/material/
     MatDialogClose,
     MatDialogContent,
     MatDialogTitle,
-    MatDatepickerInput,
     MatFormField,
-    MatDatepickerToggle,
-    MatDatepicker,
-    MatSuffix,
     MatInput,
     MatAutocomplete,
     MatOption,
@@ -47,77 +46,80 @@ import {MatChip, MatChipGrid, MatChipInput, MatChipRow} from '@angular/material/
     MatChipGrid,
     MatChipRow,
     MatLabel,
-    MatDatepickerModule
+    MatDatepickerModule,
+    MatIcon
   ],
   templateUrl: './create-petition-dialog.component.html',
   styleUrl: './create-petition-dialog.component.css'
 })
-export class CreatePetitionDialogComponent implements OnInit {
+export class CreatePetitionDialogComponent {
   title = '';
   description = '';
   petitionDate: Date = new Date();
 
   // Gestion des tags
-  availableTags: string[] = ['Environnement', 'Société', 'Animaux', 'Santé', 'Éducation', 'Écologie', 'Ville', 'Solidarité'];
   selectedTags: string[] = [];
-  filteredTags: string[] = [];
   tagInput: string = '';
   separatorKeysCodes: number[] = [ENTER, COMMA];
 
-  constructor(public dialogRef: MatDialogRef<CreatePetitionDialogComponent>) {}
+  readonly currentTags = model('');
+  readonly tags = signal([] as string[]);
+  readonly allTags: string[] = ['Environnement', 'Société', 'Animaux', 'Santé', 'Éducation', 'Écologie', 'Ville', 'Solidarité', 'Droit', 'Politique'];
+  readonly filteredTags = computed(() => {
+    const query = this.currentTags().toLowerCase();
+    // On part d'une liste filtrée par la saisie
+    let results = query
+      ? this.allTags.filter(tag => tag.toLowerCase().includes(query))
+      : this.allTags.slice();
 
+    // Exclure les tags déjà sélectionnés
+    results = results.filter(tag => !this.tags().includes(tag));
+
+    return results;
+  });
+
+  readonly announcer = inject(LiveAnnouncer);
+
+
+
+  constructor(public dialogRef: MatDialogRef<CreatePetitionDialogComponent>, public userService: UserService) {}
   onCancel(): void {
     this.dialogRef.close();
   }
 
   onCreate(): void {
-    this.dialogRef.close({ title: this.title, description: this.description });
+    this.dialogRef.close({ title: this.title, content: this.description, tags : this.tags(), access_token: this.userService.getAccessToken() });
   }
 
-  ngOnInit() {
-    this.filteredTags = this.availableTags.slice();
-  }
 
-  // Ajout d'un tag depuis l'input
-  addTagFromInput(event: any, forceAdd: boolean = false): void {
-    const input = event.input ?? event.target;
-    const value = this.tagInput?.trim() || '';
 
-    if ((value && (forceAdd || this.availableTags.includes(value))) && !this.selectedTags.includes(value)) {
-      this.selectedTags.push(value);
+  add(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+
+    if (value && !this.tags().includes(value)) {
+      this.tags.update(tags => [...tags, value]);
     }
-    // réinitialise l'input
-    this.tagInput = '';
-    this.filterTags();
-    if (input) input.value = '';
+
+    // Réinitialiser l'input
+    this.currentTags.set('');
   }
 
-  // Sélection d'un tag depuis l'autocomplete
-  selectTag(event: MatAutocompleteSelectedEvent): void {
-    const value = event.option.value;
-    if (value && !this.selectedTags.includes(value)) {
-      this.selectedTags.push(value);
-    }
-    this.tagInput = '';
-    this.filterTags();
+  remove(fruit: string): void {
+    this.tags.update(tags => {
+      const index = tags.indexOf(fruit);
+      if (index < 0) {
+        return tags;
+      }
+
+      tags.splice(index, 1);
+      this.announcer.announce(`Removed ${fruit}`);
+      return [...tags];
+    });
   }
 
-  // Suppression d'un tag
-  removeTag(tag: string): void {
-    const index = this.selectedTags.indexOf(tag);
-    if (index >= 0) {
-      this.selectedTags.splice(index, 1);
-    }
-    this.filterTags();
-  }
-
-  // Filtrage dynamique des tags pour l'autocomplete
-  filterTags(): void {
-    const filterValue = this.tagInput?.toLowerCase() || '';
-    this.filteredTags = this.availableTags
-      .filter(tag =>
-        tag.toLowerCase().includes(filterValue) &&
-        !this.selectedTags.includes(tag)
-      );
+  selected(event: MatAutocompleteSelectedEvent): void {
+    this.tags.update(tags => [...tags, event.option.viewValue]);
+    this.currentTags.set('');
+    event.option.deselect();
   }
 }

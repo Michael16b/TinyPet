@@ -3,6 +3,7 @@ package org.example;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
+import com.google.api.server.spi.config.Nullable;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.datastore.*;
 
@@ -73,10 +74,36 @@ public class PetitionEndpoint {
     }
 
     @ApiMethod(name = "list", httpMethod = "get", path = "list")
-    public List<Entity> list(@Named("access_token") String token) throws Exception {
-        verifyToken(token); // On valide le token ici aussi
+    public PetitionResponse list(
+            @Named("access_token") String token,
+            @Nullable @Named("limit") Integer limit,
+            @Nullable @Named("cursor") String cursor) throws Exception {
+
+        verifyToken(token);
+
+        int pageSize = (limit != null) ? limit : 20;
+
+        // Création de la requête
         Query query = new Query("Petition").addSort("creationDate", Query.SortDirection.DESCENDING);
+        FetchOptions fetchOptions = FetchOptions.Builder.withLimit(pageSize);
+
+        // Ajouter le curseur si on veut une page suivante
+        if (cursor != null && !cursor.isEmpty()) {
+            fetchOptions.startCursor(Cursor.fromWebSafeString(cursor));
+        }
+
+        // Exécution
         PreparedQuery pq = datastore.prepare(query);
-        return pq.asList(FetchOptions.Builder.withLimit(100));
+        List<Entity> entities = pq.asList(fetchOptions);
+
+        // Récupération du curseur suivant
+        Cursor nextCursor = pq.asQueryResultList(fetchOptions).getCursor();
+
+        // Construction de la réponse
+        PetitionResponse response = new PetitionResponse();
+        response.setEntities(entities);
+        response.setNextCursor(nextCursor != null ? nextCursor.toWebSafeString() : null);
+
+        return response;
     }
 }

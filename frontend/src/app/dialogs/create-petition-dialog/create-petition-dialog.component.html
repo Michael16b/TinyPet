@@ -1,3 +1,4 @@
+<script src="create-petition-dialog.component.ts"></script>
 <h2 mat-dialog-title class="fw-bold d-flex align-items-center">
   <i class="fas fa-pen text-primary me-2"></i>
   Créer une pétition
@@ -53,43 +54,36 @@
         <i class="fas fa-tags me-2 text-secondary"></i>
         Tags
       </label>
-      <mat-form-field>
-        <mat-chip-grid #chipGrid>
-          <mat-chip-row *ngFor="let tag of selectedTags" (removed)="removeTag(tag)">
-            {{ tag }}
-            <button matChipRemove aria-label="Supprimer le tag">
-              <i class="fas fa-times"></i>
-            </button>
-          </mat-chip-row>
-        </mat-chip-grid>
-        <input
-          [matChipInputFor]="chipGrid"
-          [matAutocomplete]="auto"
-          [(ngModel)]="tagInput"
-          (matChipInputTokenEnd)="addTagFromInput($event)"
-          name="tagInput"
-          autocomplete="off"
-        />
-        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectTag($event)">
-          <mat-option *ngFor="let tag of filteredTags" [value]="tag">
-            {{ tag }}
-          </mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
-    </div>
-
-    <!-- Date -->
-    <div class="mb-4">
-      <label class="form-label fw-semibold">
-        <i class="fas fa-calendar-alt me-2 text-secondary"></i>
-        Date de la pétition
-      </label>
-<!--      <mat-form-field class="w-100" appearance="outline">-->
-<!--        <mat-label>Choose a date</mat-label>-->
-<!--        <input matInput [matDatepicker]="picker">-->
-<!--        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>-->
-<!--        <mat-datepicker #picker></mat-datepicker>-->
-<!--      </mat-form-field>-->
+      <form>
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Sélection de tags</mat-label>
+          <mat-chip-grid #chipGrid aria-label="Sélection de tags">
+            @for (fruit of tags(); track $index) {
+              <mat-chip-row (removed)="remove(fruit)">
+                {{fruit}}
+                <button matChipRemove [attr.aria-label]="'remove ' + fruit">
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip-row>
+            }
+          </mat-chip-grid>
+          <input
+            name="currentTags"
+            placeholder="Nouveaux Tags..."
+            #fruitInput
+            [(ngModel)]="currentTags"
+            [matChipInputFor]="chipGrid"
+            [matAutocomplete]="auto"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            (matChipInputTokenEnd)="add($event)"
+          />
+          <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); fruitInput.value = ''">
+            @for (tag of filteredTags(); track tags) {
+              <mat-option [value]="tag">{{tag}}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      </form>
     </div>
   </form>
 </mat-dialog-content>
@@ -101,7 +95,7 @@
   <button
     mat-button
     class="btn btn-petition"
-    [disabled]="!title || !description || selectedTags.length === 0 || !petitionDate"
+    [disabled]="!title || !description || tags().length === 0"
     (click)="onCreate()"
     cdkFocusInitial
   >
