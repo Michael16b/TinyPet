@@ -43,4 +43,3 @@ public class PetitionResponse {
         this.nextCursor = nextCursor;
     }
 }
-

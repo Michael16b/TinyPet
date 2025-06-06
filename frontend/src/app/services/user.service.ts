@@ -37,9 +37,30 @@ export class UserService {
     localStorage.removeItem('email');
   }
 
-  getAccessToken(): string {
-    return <string>localStorage.getItem('access_token');
+  getIdUser(): string | null {
+    return localStorage.getItem('id_user');
   }
+
+  getAccessToken(): string | null {
+    return localStorage.getItem('access_token');
+  }
+
+  getName(): string | null {
+    return localStorage.getItem('name');
+  }
+
+  getFamilyName(): string | null {
+    return localStorage.getItem('family_name');
+  }
+
+  getPicture(): string | null {
+    return localStorage.getItem('picture');
+  }
+
+  getEmail(): string | null {
+    return localStorage.getItem('email');
+  }
+
 
   isUserLoggedIn(): boolean {
     const idUser = localStorage.getItem('id_user');

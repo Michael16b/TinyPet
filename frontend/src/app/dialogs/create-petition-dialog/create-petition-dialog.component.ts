@@ -1,4 +1,4 @@
-import {Component, computed, inject, model, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, model, OnInit, signal} from '@angular/core';
 import {
   MatDialogActions,
   MatDialogClose,
@@ -18,21 +18,25 @@ import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatFormField, MatInput, MatLabel, MatSuffix} from '@angular/material/input';
 import {
   MatAutocomplete,
+  MatAutocompleteModule,
   MatAutocompleteSelectedEvent,
   MatAutocompleteTrigger,
   MatOption
 } from '@angular/material/autocomplete';
-import {MatChip, MatChipGrid, MatChipInput, MatChipInputEvent, MatChipRow} from '@angular/material/chips';
+import {MatChip, MatChipGrid, MatChipInput, MatChipInputEvent, MatChipRow, MatChipsModule} from '@angular/material/chips';
 import {UserService} from '../../services/user.service';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
-import {MatIcon} from '@angular/material/icon';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
 import {MatDialog} from '@angular/material/dialog';
 import { MustLoginDialogComponent } from '../../dialogs/must-login-dialog/must-login-dialog.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 
 
 @Component({
   selector: 'app-create-petition-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
   imports: [
     FormsModule,
     MatDialogActions,
@@ -50,7 +54,11 @@ import { MustLoginDialogComponent } from '../../dialogs/must-login-dialog/must-l
     MatChipRow,
     MatLabel,
     MatDatepickerModule,
-    MatIcon
+    MatAutocompleteModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatIconModule,
+    FormsModule,
   ],
   templateUrl: './create-petition-dialog.component.html',
   styleUrl: './create-petition-dialog.component.css'
@@ -59,6 +67,7 @@ export class CreatePetitionDialogComponent {
   title = '';
   description = '';
   petitionDate: Date = new Date();
+
 
   // Gestion des tags
   selectedTags: string[] = [];
