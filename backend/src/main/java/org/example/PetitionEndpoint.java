@@ -218,7 +218,46 @@ public SignersResponse getSigners(
     return new SignersResponse(totalSignatures, signers);
 }
 
+@ApiMethod(name = "searchByTag", httpMethod = "get", path = "petition/searchByTag")
+public List<EmbeddedPetition> searchByTag(
+        @Named("tag") String tag,
+        @Named("access_token") String token
+) throws Exception {
+    verifyToken(token); // ou rends-le public
 
+    Query query = new Query("Petition")
+            .setFilter(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag))
+            .addSort("creationDate", Query.SortDirection.DESCENDING);
+
+    List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+    List<EmbeddedPetition> result = new ArrayList<>();
+
+    for (Entity petition : petitionEntities) {
+        result.add(new EmbeddedPetition(petition));
+    }
+
+    return result;
+}
+
+@ApiMethod(name = "popular", httpMethod = "get", path = "petition/popular")
+public List<EmbeddedPetition> getPopularPetitions(
+        @Named("access_token") String token
+) throws Exception {
+    verifyToken(token); // ou retire-le si tu veux une route publique
+
+    Query query = new Query("Petition")
+            .addSort("signatureCount", Query.SortDirection.DESCENDING)
+            .addSort("creationDate", Query.SortDirection.DESCENDING);
+
+    List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(100));
+    List<EmbeddedPetition> result = new ArrayList<>();
+
+    for (Entity petition : petitionEntities) {
+        result.add(new EmbeddedPetition(petition));
+    }
+
+    return result;
+}
 
 
 }
