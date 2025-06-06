@@ -1,0 +1,10 @@
+<script src="create-petition-dialog.component.ts"></script>
+<h2 mat-dialog-title>Connexion requise</h2>
+<mat-dialog-content>
+  <p>Vous devez être connecté(e) pour créer une pétition.</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Fermer</button>
+  <button mat-flat-button color="primary" (click)="goToLogin()" cdkFocusInitial>Se connecter</button>
+</mat-dialog-actions>
+

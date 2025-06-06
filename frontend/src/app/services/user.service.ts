@@ -1,11 +1,20 @@
 import { Injectable } from '@angular/core';
-import { CookiesService } from './cookies.service';
+
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
+  private loginCallback: (() => void) | null = null;
+
+
+
   constructor() {}
+
+  setLoginCallback(cb: () => void) {
+    this.loginCallback = cb;
+  }
 
   login(id: string, access_token: string, name: string, family_name: string, picture: string, email: string): void {
     localStorage.setItem('id_user', id);
@@ -14,6 +23,9 @@ export class UserService {
     localStorage.setItem('family_name', family_name);
     localStorage.setItem('picture', picture);
     localStorage.setItem('email', email);
+    if (this.loginCallback) {
+      this.loginCallback();  // prévenir que la connexion a eu lieu
+    }
   }
 
   logout(): void {
@@ -28,9 +40,6 @@ export class UserService {
   getAccessToken(): string {
     return <string>localStorage.getItem('access_token');
   }
-
-
-
 
   isUserLoggedIn(): boolean {
     const idUser = localStorage.getItem('id_user');

@@ -6,7 +6,7 @@
 </h2>
 
 <mat-dialog-content class="mat-typography petition-dialog-content">
-  <form #petitionForm="ngForm" class="d-flex flex-column h-100" (ngSubmit)="onCreate()" autocomplete="off">
+  <form #petitionForm="ngForm" class="d-flex flex-column h-100" (ngSubmit)="openCreatePetition()" autocomplete="off">
     <!-- Titre -->
     <div class="mb-4">
       <label for="petitionTitle" class="form-label fw-semibold">
@@ -96,7 +96,7 @@
     mat-button
     class="btn btn-petition"
     [disabled]="!title || !description || tags().length === 0"
-    (click)="onCreate()"
+    (click)="openCreatePetition()"
     cdkFocusInitial
   >
     <i class="fas fa-paper-plane me-1"></i>Créer la pétition

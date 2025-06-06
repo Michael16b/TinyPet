@@ -26,6 +26,9 @@ import {MatChip, MatChipGrid, MatChipInput, MatChipInputEvent, MatChipRow} from 
 import {UserService} from '../../services/user.service';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {MatIcon} from '@angular/material/icon';
+import {MatDialog} from '@angular/material/dialog';
+import { MustLoginDialogComponent } from '../../dialogs/must-login-dialog/must-login-dialog.component';
+
 
 
 @Component({
@@ -82,15 +85,46 @@ export class CreatePetitionDialogComponent {
 
 
 
-  constructor(public dialogRef: MatDialogRef<CreatePetitionDialogComponent>, public userService: UserService) {}
+  constructor(private dialog: MatDialog, public dialogRef: MatDialogRef<CreatePetitionDialogComponent>, public userService: UserService) {}
   onCancel(): void {
     this.dialogRef.close();
   }
 
-  onCreate(): void {
-    this.dialogRef.close({ title: this.title, content: this.description, tags : this.tags(), access_token: this.userService.getAccessToken() });
-  }
+  // onCreate(): void {
+  //   this.dialogRef.close({ title: this.title, content: this.description, tags : this.tags(), access_token: this.userService.getAccessToken() });
+  // }
 
+  openCreatePetition(): void {
+    if (!this.userService.isUserLoggedIn()) {
+      const mustLoginRef = this.dialog.open(MustLoginDialogComponent, {
+        width: '400px',
+        data: {
+          title: this.title,
+          description: this.description,
+          tags: this.tags()
+        }
+      });
+
+      mustLoginRef.afterClosed().subscribe((result) => {
+        if (result && result.loggedIn) {
+          this.dialogRef.close({
+            title: result.title,
+            content: result.description,
+            tags: result.tags,
+            access_token: this.userService.getAccessToken()
+          });
+        }
+      });
+      return;
+    }
+
+    this.dialogRef.close({
+      title: this.title,
+      content: this.description,
+      tags: this.tags(),
+      access_token: this.userService.getAccessToken()
+    });
+  }
 
 
   add(event: MatChipInputEvent): void {

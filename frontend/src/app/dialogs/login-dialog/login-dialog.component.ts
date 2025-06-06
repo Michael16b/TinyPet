@@ -26,6 +26,7 @@ interface GoogleJwtPayload {
   selector: 'app-login-dialog',
   templateUrl: './login-dialog.component.html',
   styleUrls: ['./login-dialog.component.css'],
+  standalone: true,
   imports: [
     ReactiveFormsModule,
     MatButton,
