@@ -7,6 +7,9 @@ import { Injectable } from '@angular/core';
 })
 export class UserService {
   private loginCallback: (() => void) | null = null;
+  private isLoggedIn: boolean = false;
+  private tokenCheckStarted: boolean = false;
+
 
 
 
@@ -23,6 +26,7 @@ export class UserService {
     localStorage.setItem('family_name', family_name);
     localStorage.setItem('picture', picture);
     localStorage.setItem('email', email);
+    this.isLoggedIn = true;
     if (this.loginCallback) {
       this.loginCallback();  // prévenir que la connexion a eu lieu
     }
@@ -35,6 +39,9 @@ export class UserService {
     localStorage.removeItem('family_name');
     localStorage.removeItem('picture');
     localStorage.removeItem('email');
+
+    this.isLoggedIn = false;
+    this.tokenCheckStarted = false;
   }
 
 
@@ -42,26 +49,29 @@ export class UserService {
     return localStorage.getItem('id_user');
   }
 
+  getIsLoggedIn(): boolean {
+    return this.isLoggedIn;
+  }
+
   getAccessToken(): string {
     return <string>localStorage.getItem('access_token');
   }
 
-  getName(): string | null {
-    return localStorage.getItem('name');
+  getName(): string {
+    return localStorage.getItem('name') || "";
   }
 
-  getFamilyName(): string | null {
-    return localStorage.getItem('family_name');
+  getFamilyName(): string {
+    return localStorage.getItem('family_name') || "";
   }
 
   getPicture(): string | null {
-    return localStorage.getItem('picture');
+    return localStorage.getItem('picture') || "";
   }
 
   getEmail(): string | null {
     return localStorage.getItem('email');
   }
-
 
   isUserLoggedIn(): boolean {
     const idUser = localStorage.getItem('id_user');
@@ -69,6 +79,32 @@ export class UserService {
     const email = localStorage.getItem('email');
 
     return !!(idUser && username && email);
+  }
+
+  refreshUser(): void {
+    this.isLoggedIn = this.isUserLoggedIn();
+
+
+    // Lancer la surveillance du token seulement si connecté
+    if (this.isLoggedIn && !this.tokenCheckStarted) {
+      this.tokenCheckStarted = true;
+
+      setInterval(() => {
+        const currentToken = this.getAccessToken();
+
+        if (!currentToken || this.isTokenExpired(currentToken)) {
+          console.log('⚠️ Token expiré, on déconnecte');
+          this.logout();
+        }
+      }, 5_000);
+    }
+  }
+
+  isTokenExpired(token: string): boolean {
+    if (!token) return true;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
   }
 
 }
