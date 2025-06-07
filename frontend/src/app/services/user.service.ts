@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 
-
-
 @Injectable({
   providedIn: 'root',
 })
@@ -23,9 +21,11 @@ export class UserService {
     localStorage.setItem('family_name', family_name);
     localStorage.setItem('picture', picture);
     localStorage.setItem('email', email);
+
     this.isLoggedIn = true;
+
     if (this.loginCallback) {
-      this.loginCallback();  // prévenir que la connexion a eu lieu
+      this.loginCallback(); // prévenir que la connexion a eu lieu
     }
   }
 
@@ -39,14 +39,18 @@ export class UserService {
 
     this.isLoggedIn = false;
     this.tokenCheckStarted = false;
-  }
 
+    if (this.loginCallback) {
+      this.loginCallback(); // prévenir que la déconnexion a eu lieu
+    }
+  }
 
   getIdUser(): string | null {
     return localStorage.getItem('id_user');
   }
 
   getIsLoggedIn(): boolean {
+    this.isLoggedIn = this.isUserLoggedIn();
     return this.isLoggedIn;
   }
 
@@ -55,15 +59,15 @@ export class UserService {
   }
 
   getName(): string {
-    return localStorage.getItem('name') || "";
+    return localStorage.getItem('name') || '';
   }
 
   getFamilyName(): string {
-    return localStorage.getItem('family_name') || "";
+    return localStorage.getItem('family_name') || '';
   }
 
   getPicture(): string | null {
-    return localStorage.getItem('picture') || "";
+    return localStorage.getItem('picture') || '';
   }
 
   getEmail(): string | null {
@@ -72,36 +76,42 @@ export class UserService {
 
   isUserLoggedIn(): boolean {
     const idUser = localStorage.getItem('id_user');
-    const username = localStorage.getItem('name');
+    const token = localStorage.getItem('access_token');
     const email = localStorage.getItem('email');
 
-    return !!(idUser && username && email);
+    if (!idUser || !token || !email || this.isTokenExpired(token)) {
+      return false;
+    }
+
+    return true;
   }
 
   refreshUser(): void {
-    this.isLoggedIn = this.isUserLoggedIn();
-
-
-    // Lancer la surveillance du token seulement si connecté
-    if (this.isLoggedIn && !this.tokenCheckStarted) {
+    if (!this.tokenCheckStarted) {
       this.tokenCheckStarted = true;
 
       setInterval(() => {
-        const currentToken = this.getAccessToken();
+        const token = this.getAccessToken();
 
-        if (!currentToken || this.isTokenExpired(currentToken)) {
-          console.log('⚠️ Token expiré, on déconnecte');
+        if (!token || this.isTokenExpired(token)) {
+          console.warn('⚠️ Token expiré ou invalide. Déconnexion automatique.');
           this.logout();
+        } else {
+          this.isLoggedIn = this.isUserLoggedIn();
         }
-      }, 5_000);
+      }, 5000); // toutes les 5 secondes
     }
   }
 
   isTokenExpired(token: string): boolean {
     if (!token) return true;
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const now = Math.floor(Date.now() / 1000);
-    return payload.exp < now;
-  }
 
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const now = Math.floor(Date.now() / 1000);
+      return payload.exp < now;
+    } catch (e) {
+      return true;
+    }
+  }
 }
