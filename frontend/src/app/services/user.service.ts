@@ -37,12 +37,13 @@ export class UserService {
     localStorage.removeItem('email');
   }
 
+
   getIdUser(): string | null {
     return localStorage.getItem('id_user');
   }
 
-  getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
+  getAccessToken(): string {
+    return <string>localStorage.getItem('access_token');
   }
 
   getName(): string | null {
