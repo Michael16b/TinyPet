@@ -48,8 +48,8 @@ export class PetitionComponent implements OnInit {
     private apiService: ApiService,
     protected userService: UserService,
     private snackBar: MatSnackBar,
-    private router: Router
-  ) {}
+    private router: Router,
+    ) {}
 
   async ngOnInit() {
     await this.loadPetitions();

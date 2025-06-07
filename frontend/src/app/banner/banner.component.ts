@@ -1,24 +1,21 @@
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import {UserService} from '../services/user.service';
-import {NgIf} from '@angular/common';
-import {LoginDialogComponent} from '../dialogs/login-dialog/login-dialog.component';
+import { UserService } from '../services/user.service';
+import { NgIf } from '@angular/common';
+import { LoginDialogComponent } from '../dialogs/login-dialog/login-dialog.component';
 import { ChangeDetectorRef } from '@angular/core';
-
 
 @Component({
   selector: 'app-banner',
   templateUrl: './banner.component.html',
-  imports: [
-    NgIf
-  ],
+  imports: [NgIf],
   styleUrls: ['./banner.component.css']
 })
 export class BannerComponent implements OnInit {
-  isLoggedIn: any;
-  picture: any;
-  familyName: any;
-  name: any;
+  isLoggedIn: boolean = false;
+  picture: string | null = '';
+  familyName: string = '';
+  name: string = '';
 
   constructor(
     private dialog: MatDialog,
@@ -28,10 +25,17 @@ export class BannerComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateUser();
-    this.refreshUser();
+    this.userService.refreshUser();
+
+    // Mettre à jour l'affichage toutes les 3 secondes
+    setInterval(() => {
+      this.updateUser();
+      this.cdr.detectChanges();
+    }, 3000);
+
+    // Callback sur login ou logout
     this.userService.setLoginCallback(() => {
       this.updateUser();
-      this.refreshUser();
       this.cdr.detectChanges();
     });
   }
@@ -40,8 +44,8 @@ export class BannerComponent implements OnInit {
     const dialogRef = this.dialog.open(LoginDialogComponent, {
       width: '370px',
     });
+
     dialogRef.afterClosed().subscribe(() => {
-      this.refreshUser();
       this.updateUser();
     });
   }
@@ -49,11 +53,6 @@ export class BannerComponent implements OnInit {
   logout(): void {
     this.userService.logout();
     this.updateUser();
-    this.cdr.detectChanges();
-  }
-
-  refreshUser(): void {
-    this.userService.refreshUser();
     this.cdr.detectChanges();
   }
 
