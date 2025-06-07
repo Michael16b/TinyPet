@@ -15,11 +15,10 @@ import { ChangeDetectorRef } from '@angular/core';
   styleUrls: ['./banner.component.css']
 })
 export class BannerComponent implements OnInit {
-  isLoggedIn = false;
-  username: string | null = null;
-  picture: string | null = null;
-  private lastKnownToken: string | null = null;
-  private tokenCheckStarted = false;
+  isLoggedIn: any;
+  picture: any;
+  familyName: any;
+  name: any;
 
   constructor(
     private dialog: MatDialog,
@@ -28,8 +27,10 @@ export class BannerComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.updateUser();
     this.refreshUser();
     this.userService.setLoginCallback(() => {
+      this.updateUser();
       this.refreshUser();
       this.cdr.detectChanges();
     });
@@ -41,41 +42,25 @@ export class BannerComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe(() => {
       this.refreshUser();
+      this.updateUser();
     });
   }
 
   logout(): void {
     this.userService.logout();
-
-    this.isLoggedIn = false;
-    this.username = null;
-    this.picture = null;
-    this.tokenCheckStarted = false;
+    this.updateUser();
     this.cdr.detectChanges();
   }
 
-
   refreshUser(): void {
-    this.isLoggedIn = this.userService.isUserLoggedIn();
-    this.username = localStorage.getItem('name');
-    this.picture = localStorage.getItem('picture');
+    this.userService.refreshUser();
+    this.cdr.detectChanges();
+  }
 
-    // Lancer la surveillance du token seulement si connecté
-    if (this.isLoggedIn && !this.tokenCheckStarted) {
-      this.tokenCheckStarted = true;
-      this.lastKnownToken = this.userService.getAccessToken();
-
-      setInterval(() => {
-        const currentToken = this.userService.getAccessToken();
-
-        if (this.lastKnownToken !== currentToken) {
-          console.log('⚠️ Access token modifié, on déconnecte');
-          this.logout();
-          this.cdr.detectChanges();
-        }
-
-        this.lastKnownToken = currentToken;
-      }, 5_000);
-    }
+  updateUser(): void {
+    this.isLoggedIn = this.userService.getIsLoggedIn();
+    this.picture = this.userService.getPicture();
+    this.familyName = this.userService.getFamilyName();
+    this.name = this.userService.getName();
   }
 }
