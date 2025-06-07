@@ -53,7 +53,7 @@ export class HomeComponent {
 
 
   openPetitionView(): void {
-    if (this.loggedIn) {
+    if (this.userService.isUserLoggedIn()) {
       this.router.navigate(['/petition']);
     } else {
       this.dialog.open(LoginDialogComponent, {
