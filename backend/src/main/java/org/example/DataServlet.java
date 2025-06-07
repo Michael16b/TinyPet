@@ -15,7 +15,6 @@ public class DataServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        // Exemple de données à envoyer en JSON
         String jsonResponse = "{\"message\": \"Hello from backend!\"}";
 
         resp.getWriter().write(jsonResponse);

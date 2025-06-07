@@ -7,6 +7,8 @@ public class PetitionResponse {
     private String status;
     private String message;
     private Long petitionId;
+    private List<EmbeddedPetition> entities;
+    private String nextCursor;
 
     public PetitionResponse() {}
 
@@ -24,5 +26,21 @@ public class PetitionResponse {
 
     public Long getPetitionId() { return petitionId; }
     public void setPetitionId(Long petitionId) { this.petitionId = petitionId; }
+
+    public List<EmbeddedPetition> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(List<EmbeddedPetition> entities) {
+        this.entities = entities;
+    }
+
+    public String getNextCursor() {
+        return nextCursor;
+    }
+
+    public void setNextCursor(String nextCursor) {
+        this.nextCursor = nextCursor;
+    }
 }
 

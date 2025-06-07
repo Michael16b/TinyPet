@@ -23,8 +23,7 @@ import java.util.List;
                 this.tags = (List<String>) petition.getProperty("tags");
                 this.creationDate = (Date) petition.getProperty("creationDate");
                 this.signatureCount = (Long) petition.getProperty("signatureCount");
-        
-                // ✅ Lire depuis l'entité Petition directement
+
                 this.creatorFirstName = (String) petition.getProperty("creatorFirstName");
                 this.creatorLastName = (String) petition.getProperty("creatorLastName");
             }
