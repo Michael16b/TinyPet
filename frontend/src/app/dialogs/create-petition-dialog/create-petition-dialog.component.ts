@@ -18,7 +18,6 @@ import {COMMA, ENTER} from '@angular/cdk/keycodes';
 import {MatFormField, MatInput, MatLabel, MatSuffix} from '@angular/material/input';
 import {
   MatAutocomplete,
-  MatAutocompleteModule,
   MatAutocompleteSelectedEvent,
   MatAutocompleteTrigger,
   MatOption
@@ -35,8 +34,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-create-petition-dialog',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [
     FormsModule,
     MatDialogActions,
@@ -54,11 +51,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     MatChipRow,
     MatLabel,
     MatDatepickerModule,
-    MatAutocompleteModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatIconModule,
-    FormsModule,
+    MatIcon
   ],
   templateUrl: './create-petition-dialog.component.html',
   styleUrl: './create-petition-dialog.component.css'
@@ -67,7 +60,6 @@ export class CreatePetitionDialogComponent {
   title = '';
   description = '';
   petitionDate: Date = new Date();
-
 
   // Gestion des tags
   selectedTags: string[] = [];
