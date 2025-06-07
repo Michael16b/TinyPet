@@ -10,10 +10,9 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import java.util.ArrayList;
 
+import java.util.*;
 
-import java.util.Collections;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -21,9 +20,9 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
 import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import com.google.api.server.spi.config.Api;
 
 import static org.example.PetitionUtils.getEmbeddedPetitions;
@@ -157,6 +156,10 @@ public PetitionResponse create(
             @Nullable @Named("sortBy") String sortBy,
             @Nullable @Named("sortOrder") String sortOrder,
             @Nullable @Named("tag") String tag,
+            @Nullable @Named("signedByUserEmail") String signedByUserEmail,
+            @Nullable @Named("userEmail") String userEmail,
+            @Nullable @Named("userSearch") String userSearch,
+            @Nullable @Named("userSearchField") String userSearchField,
             @Nullable @Named("cursor") String cursor
     ) throws Exception {
 
@@ -164,14 +167,23 @@ public PetitionResponse create(
 
         int pageSize = (limit != null) ? limit : 20;
 
+        logger.info("Listing petitions with parameters: " +
+                "limit=" + pageSize +
+                ", sortBy=" + sortBy +
+                ", sortOrder=" + sortOrder +
+                ", tag=" + tag +
+                ", signedByUserEmail=" + signedByUserEmail +
+                ", userEmail=" + userEmail +
+                ", userSearch=" + userSearch +
+                ", userSearchField=" + userSearchField +
+                ", cursor=" + cursor);
+
         Query query = new Query("Petition");
 
-        // Filtrage par tag (tableau d'attributs, attention à la structure de l'entité)
         if (tag != null && !tag.trim().isEmpty()) {
             query.setFilter(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag));
         }
 
-        // Tri dynamique
         String sortField = (sortBy != null && !sortBy.isEmpty()) ? sortBy : "creationDate";
         Query.SortDirection direction =
                 (sortOrder != null && sortOrder.equalsIgnoreCase("asc")) ?
@@ -181,8 +193,47 @@ public PetitionResponse create(
         if (!"creationDate".equals(sortField)) {
             query.addSort("creationDate", Query.SortDirection.DESCENDING);
         }
+        if (userEmail != null && !userEmail.trim().isEmpty()) {
+            query.setFilter(new Query.FilterPredicate("creatorEmail", Query.FilterOperator.EQUAL, userEmail));
+        }
 
-        // Pagination
+        if (signedByUserEmail != null && !signedByUserEmail.trim().isEmpty()) {
+            Query signatureQuery = new Query("Signature")
+                    .setFilter(new Query.FilterPredicate("userEmail", Query.FilterOperator.EQUAL, signedByUserEmail));
+            List<Entity> userSignatures = datastore.prepare(signatureQuery)
+                    .asList(FetchOptions.Builder.withDefaults());
+
+            logger.info("Query for signatures: " + signatureQuery);
+            logger.info("userSignatures: " + userSignatures);
+
+            List<Object> petitionIds = userSignatures.stream()
+                    .map(sig -> sig.getProperty("petitionId"))
+                    .collect(Collectors.toList());
+
+            logger.info("petitionIds: " + petitionIds);
+
+            Query petitionQuery = new Query("Petition")
+                    .setFilter(new Query.FilterPredicate("id", Query.FilterOperator.IN, petitionIds));
+
+            List<Entity> petitions = datastore.prepare(petitionQuery)
+                    .asList(FetchOptions.Builder.withDefaults());
+
+            logger.info("Filtered petitions: " + petitions);
+        }
+
+        if (userSearch != null && !userSearch.trim().isEmpty()) {
+            if (userSearchField != null && userSearchField.equals("creatorFirstName")) {
+                logger.info("Filtering by creatorFirstName: " + userSearch);
+                query.setFilter(new Query.FilterPredicate("creatorFirstName", Query.FilterOperator.EQUAL, userSearch));
+            } else if (userSearchField != null && userSearchField.equals("creatorLastName")) {
+                logger.info("Filtering by creatorLastName: " + userSearch);
+                query.setFilter(new Query.FilterPredicate("creatorLastName", Query.FilterOperator.EQUAL, userSearch));
+            } else  {
+                logger.info("Filtering by creatorEmail: " + userSearch);
+                query.setFilter(new Query.FilterPredicate("creatorEmail", Query.FilterOperator.EQUAL, userSearch));
+            }
+        }
+
         FetchOptions fetchOptions = FetchOptions.Builder.withLimit(pageSize);
         if (cursor != null && !cursor.isEmpty()) {
             fetchOptions.startCursor(Cursor.fromWebSafeString(cursor));
@@ -190,9 +241,7 @@ public PetitionResponse create(
 
         PreparedQuery pq = datastore.prepare(query);
         QueryResultList<Entity> entities = pq.asQueryResultList(fetchOptions);
-
         List<EmbeddedPetition> embeddedPetitions = getEmbeddedPetitions(entities);
-
         Cursor nextCursor = entities.getCursor();
 
         PetitionResponse response = new PetitionResponse();
@@ -201,6 +250,7 @@ public PetitionResponse create(
 
         return response;
     }
+
 
     @ApiMethod(name = "sign", httpMethod = "post", path = "sign")
     public PetitionResponse sign(

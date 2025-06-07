@@ -65,6 +65,160 @@ indexes:
       - name: creationDate
         direction: desc
 
+    # Recherche par mail + date décroissante (page auteur)
+  - kind: Petition
+    properties:
+      - name: creatorEmail
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+  # Recherche par mail + signatureCount asc + creationDate desc
+  - kind: Petition
+    properties:
+      - name: creatorEmail
+      - name: signatureCount
+        direction: asc
+      - name: creationDate
+        direction: desc
+
+  # Recherche par mail + creationDate desc
+  - kind: Petition
+    properties:
+      - name: creatorEmail
+      - name: creationDate
+        direction: desc
+
+  # Recherche par mail + creationDate asc
+  - kind: Petition
+    properties:
+      - name: creatorEmail
+      - name: creationDate
+        direction: asc
+
+
+  # Recherche par prénom + date décroissante
+  - kind: Petition
+    properties:
+      - name: creatorFirstName
+      - name: creationDate
+        direction: desc
+
+  # Recherche par prénom + date croissante
+  - kind: Petition
+    properties:
+      - name: creatorFirstName
+      - name: creationDate
+        direction: asc
+
+  # Recherche par prénom + popularité décroissante
+  - kind: Petition
+    properties:
+      - name: creatorFirstName
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+  # Recherche par nom + date décroissante
+  - kind: Petition
+    properties:
+      - name: creatorLastName
+      - name: creationDate
+        direction: desc
+
+  # Recherche par nom + date croissante
+  - kind: Petition
+    properties:
+      - name: creatorLastName
+      - name: creationDate
+        direction: asc
+
+  # Recherche par nom + popularité décroissante
+  - kind: Petition
+    properties:
+      - name: creatorLastName
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+  # Recherche par tags + prénom + date décroissante
+  - kind: Petition
+    properties:
+      - name: tags
+      - name: creatorFirstName
+      - name: creationDate
+        direction: desc
+
+  # Recherche par tags + nom + date décroissante
+  - kind: Petition
+    properties:
+      - name: tags
+      - name: creatorLastName
+      - name: creationDate
+        direction: desc
+
+  # Recherche par tags + prénom + popularité
+  - kind: Petition
+    properties:
+      - name: tags
+      - name: creatorFirstName
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+  # Recherche par tags + nom + popularité
+  - kind: Petition
+    properties:
+      - name: tags
+      - name: creatorLastName
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+  - kind: Petition
+    properties:
+      - name: creatorFirstName
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+
+
+  - kind: Petition
+    properties:
+      - name: id
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+  - kind: Petition
+    properties:
+      - name: id
+      - name: signatureCount
+        direction: asc
+      - name: creationDate
+        direction: desc
+  - kind: Petition
+    properties:
+      - name: id
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: asc
+  - kind: Petition
+    properties:
+      - name: id
+      - name: signatureCount
+        direction: asc
+      - name: creationDate
+        direction: asc
+
   # SIGNATURE
 
   # Vérifier si un utilisateur a déjà signé une pétition

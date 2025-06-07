@@ -34,15 +34,19 @@ export class PetitionComponent implements OnInit {
   sortBy: string = 'signatureCount';
   sortOrder: string = 'desc';
   tagFilter: string = '';
+  userEmail: string | null | undefined = '';
 
   nextPageIsEmpty: boolean = false;
   private nextPageCache: any[] = [];
   cursorStack: string[] = [''];
   currentCursorIndex: number = 0;
+  userSearch: string = '';
+  userSearchField: string = 'creatorFirstName';
+  activeFilter: 'all' | 'mine' | 'signed' = 'all';
 
   constructor(
     private apiService: ApiService,
-    private userService: UserService,
+    protected userService: UserService,
     private snackBar: MatSnackBar,
     private router: Router
   ) {}
@@ -51,7 +55,11 @@ export class PetitionComponent implements OnInit {
     await this.loadPetitions();
   }
 
-  async loadPetitions(cursor?: string, fromNavigationButton: boolean = false) {
+  async loadPetitions(cursor?: string,
+                      fromNavigationButton: boolean = false,
+                      userEmail?: string,
+                      userSearchField?: string ,
+                      signedByUserEmail?: string) {
     this.loading = true;
     this.error = '';
     this.nextPageIsEmpty = false;
@@ -65,7 +73,11 @@ export class PetitionComponent implements OnInit {
         cursor,
         this.sortBy,
         this.sortOrder,
-        this.tagFilter?.trim() || undefined
+        this.tagFilter?.trim() || undefined,
+        userEmail?.trim() || undefined,
+        this.userSearch?.trim() || undefined,
+        userSearchField?.trim() || undefined,
+        signedByUserEmail?.trim() || undefined
       );
 
       this.petitions = response.entities || [];
@@ -91,7 +103,8 @@ export class PetitionComponent implements OnInit {
           this.nextCursor,
           this.sortBy,
           this.sortOrder,
-          this.tagFilter?.trim() || undefined
+          this.tagFilter?.trim() || undefined,
+          this.userEmail?.trim() || undefined
         );
         this.nextPageCache = nextPageResp.entities || [];
         this.nextPageIsEmpty = this.nextPageCache.length === 0;
@@ -159,4 +172,40 @@ export class PetitionComponent implements OnInit {
     } catch {
     }
   }
+
+  showAllPetitions() {
+    this.activeFilter = 'all';
+    this.userEmail = undefined;
+    this.loadPetitions();
+  }
+
+  showMyPetitions() {
+    this.activeFilter = 'mine';
+    this.userEmail = this.userService.getEmail();
+    this.loadPetitions(undefined, false, this.userService.getEmail()?.trim());
+  }
+
+  showMySignedPetitions() {
+    this.activeFilter = 'signed';
+    this.loadPetitions(undefined, false, undefined, undefined, this.userService.getEmail()?.trim());
+  }
+
+  onUserSearch() {
+    this.loadPetitions(undefined, false, undefined, this.userSearchField, this.userSearch.trim() || undefined);
+  }
+
+  clearUserSearch() {
+    this.userSearch = '';
+    this.onUserSearch();
+  }
+
+  getSearchFieldLabel(field: string): string {
+    switch(field) {
+      case 'creatorFirstName': return 'prénom';
+      case 'creatorLastName': return 'nom';
+      case 'creatorEmail': return 'email';
+      default: return '';
+    }
+  }
+
 }

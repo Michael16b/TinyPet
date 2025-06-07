@@ -6,8 +6,9 @@ import {MatSnackBar} from '@angular/material/snack-bar';
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl: string = window.location.protocol + "//" + window.location.host;
-  private baseRealUrlBackend: string = "https://tinypet-atalla-besily-jan.ew.r.appspot.com";
+  // private baseUrl: string = window.location.protocol + "//" + window.location.host; // For production
+  private baseUrl: string = "https://tinypet-atalla-besily-jan.ew.r.appspot.com"; // For pre-production
+  // private baseUrl: string = "http://localhost:8080"; // For local development
 
   constructor(
     private snackBar: MatSnackBar
@@ -23,7 +24,7 @@ export class ApiService {
 
   async sendPetition(petitionData: any): Promise<any> {
     try {
-      const response = await fetch(`${this.baseRealUrlBackend}/_ah/api/petitionApi/v1/create`, {
+      const response = await fetch(`${this.baseUrl}/_ah/api/petitionApi/v1/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,9 +47,13 @@ export class ApiService {
     cursor?: string,
     sortBy?: string,
     sortOrder?: string,
-    tag?: string
+    tag?: string,
+    userEmail?: string,
+    userSearch?: string,
+    userSearchField?: string,
+    signedByUserEmail?: string
   ): Promise<any> {
-    let url = `${this.baseRealUrlBackend}/_ah/api/petitionApi/v1/list?access_token=${encodeURIComponent(accessToken)}&limit=${encodeURIComponent(limit)}`;
+    let url = `${this.baseUrl}/_ah/api/petitionApi/v1/list?access_token=${encodeURIComponent(accessToken)}&limit=${encodeURIComponent(limit)}`;
     if (sortBy) {
       url += `&sortBy=${encodeURIComponent(sortBy)}`;
     }
@@ -58,9 +63,22 @@ export class ApiService {
     if (tag) {
       url += `&tag=${encodeURIComponent(tag)}`;
     }
+    if (signedByUserEmail) {
+      url += `&signedByUserEmail=${encodeURIComponent(signedByUserEmail)}`;
+    }
+    if (userEmail) {
+      url += `&userEmail=${encodeURIComponent(userEmail)}`;
+    }
+    if (userSearch) {
+      url += `&userSearch=${encodeURIComponent(userSearch)}`;
+    }
+    if (userSearchField) {
+      url += `&userSearchField=${encodeURIComponent(userSearchField)}`;
+    }
     if (cursor) {
       url += `&cursor=${encodeURIComponent(cursor)}`;
     }
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -74,7 +92,7 @@ export class ApiService {
   }
 
   async signPetition(accessToken: string, petitionId: string): Promise<any> {
-    const url = `${this.baseRealUrlBackend}/_ah/api/petitionApi/v1/sign?petitionId=${encodeURIComponent(petitionId)}&access_token=${encodeURIComponent(accessToken)}`;
+    const url = `${this.baseUrl}/_ah/api/petitionApi/v1/sign?petitionId=${encodeURIComponent(petitionId)}&access_token=${encodeURIComponent(accessToken)}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -100,7 +118,7 @@ export class ApiService {
   }
 
   async getSigners(accessToken: string, petitionId: string): Promise<any[]> {
-    const url = `${this.baseRealUrlBackend}/_ah/api/petitionApi/v1/petition/${petitionId}/signers/?access_token=${encodeURIComponent(accessToken)}`;
+    const url = `${this.baseUrl}/_ah/api/petitionApi/v1/petition/${petitionId}/signers/?access_token=${encodeURIComponent(accessToken)}`;
     const response = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
     const data = await response.json();
     return data.signers;
