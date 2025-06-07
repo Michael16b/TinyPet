@@ -6,6 +6,41 @@
   </div>
   <div *ngIf="error" class="alert alert-danger">{{error}}</div>
 
+  <!-- Barre de tri/filtre -->
+  <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <div class="btn-group me-2">
+      <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-sort"></i> Trier par
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" (click)="setSort('signatureCount', 'desc')">
+          <i class="fas fa-fire me-2"></i>Popularité décroissante
+        </a></li>
+        <li><a class="dropdown-item" (click)="setSort('signatureCount', 'asc')">
+          <i class="fas fa-fire-alt me-2"></i>Popularité croissante
+        </a></li>
+        <li><a class="dropdown-item" (click)="setSort('creationDate', 'desc')">
+          <i class="fas fa-calendar-alt me-2"></i>Date décroissante
+        </a></li>
+        <li><a class="dropdown-item" (click)="setSort('creationDate', 'asc')">
+          <i class="fas fa-calendar me-2"></i>Date croissante
+        </a></li>
+      </ul>
+    </div>
+
+    <!-- Recherche par tag -->
+    <div class="input-group w-auto">
+      <input type="text" class="form-control" placeholder="Filtrer par tag..." [(ngModel)]="tagFilter" (keyup.enter)="onTagSearch()" />
+      <button class="btn btn-outline-secondary" type="button" (click)="onTagSearch()">
+        <i class="fas fa-tag"></i>
+      </button>
+      <button class="btn btn-outline-danger" type="button" *ngIf="tagFilter" (click)="clearTagFilter()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+
   <div class="row gy-4">
     <div *ngFor="let petition of petitions" class="col-12">
       <div class="card shadow-sm position-relative h-100">

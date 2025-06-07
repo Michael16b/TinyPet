@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.logging.Logger;
 import com.google.api.server.spi.config.Api;
 
+import static org.example.PetitionUtils.getEmbeddedPetitions;
+
 
 @Api(
   name = "petitionApi",
@@ -148,20 +150,40 @@ public PetitionResponse create(
         );
 }
 
-
     @ApiMethod(name = "list", httpMethod = "get", path = "list")
     public PetitionResponse list(
             @Named("access_token") String token,
             @Nullable @Named("limit") Integer limit,
-            @Nullable @Named("cursor") String cursor) throws Exception {
+            @Nullable @Named("sortBy") String sortBy,
+            @Nullable @Named("sortOrder") String sortOrder,
+            @Nullable @Named("tag") String tag,
+            @Nullable @Named("cursor") String cursor
+    ) throws Exception {
 
         verifyToken(token);
 
         int pageSize = (limit != null) ? limit : 20;
 
-        Query query = new Query("Petition").addSort("creationDate", Query.SortDirection.DESCENDING);
-        FetchOptions fetchOptions = FetchOptions.Builder.withLimit(pageSize);
+        Query query = new Query("Petition");
 
+        // Filtrage par tag (tableau d'attributs, attention à la structure de l'entité)
+        if (tag != null && !tag.trim().isEmpty()) {
+            query.setFilter(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag));
+        }
+
+        // Tri dynamique
+        String sortField = (sortBy != null && !sortBy.isEmpty()) ? sortBy : "creationDate";
+        Query.SortDirection direction =
+                (sortOrder != null && sortOrder.equalsIgnoreCase("asc")) ?
+                        Query.SortDirection.ASCENDING : Query.SortDirection.DESCENDING;
+        query.addSort(sortField, direction);
+
+        if (!"creationDate".equals(sortField)) {
+            query.addSort("creationDate", Query.SortDirection.DESCENDING);
+        }
+
+        // Pagination
+        FetchOptions fetchOptions = FetchOptions.Builder.withLimit(pageSize);
         if (cursor != null && !cursor.isEmpty()) {
             fetchOptions.startCursor(Cursor.fromWebSafeString(cursor));
         }
@@ -178,14 +200,6 @@ public PetitionResponse create(
         response.setNextCursor(nextCursor != null ? nextCursor.toWebSafeString() : null);
 
         return response;
-    }
-
-    private List<EmbeddedPetition> getEmbeddedPetitions(List<Entity> petitionEntities) {
-        List<EmbeddedPetition> result = new ArrayList<>();
-        for (Entity petition : petitionEntities) {
-            result.add(new EmbeddedPetition(petition));
-        }
-        return result;
     }
 
     @ApiMethod(name = "sign", httpMethod = "post", path = "sign")
@@ -280,45 +294,6 @@ public PetitionResponse create(
 
 
             return new SignersResponse(totalSignatures, signers);
-    }
-
-    @ApiMethod(name = "searchByTag", httpMethod = "get", path = "petition/searchByTag")
-    public List<EmbeddedPetition> searchByTag(
-            @Named("tag") String tag,
-            @Named("access_token") String token) throws Exception {
-            verifyToken(token);
-
-            Query query = new Query("Petition")
-                    .setFilter(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag))
-                    .addSort("creationDate", Query.SortDirection.DESCENDING);
-
-            List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
-            List<EmbeddedPetition> result = new ArrayList<>();
-
-            for (Entity petition : petitionEntities) {
-                result.add(new EmbeddedPetition(petition));
-            }
-
-            return result;
-    }
-
-    @ApiMethod(name = "popular", httpMethod = "get", path = "petition/popular")
-    public List<EmbeddedPetition> getPopularPetitions(
-            @Named("access_token") String token) throws Exception {
-            verifyToken(token);
-
-            Query query = new Query("Petition")
-                    .addSort("signatureCount", Query.SortDirection.DESCENDING)
-                    .addSort("creationDate", Query.SortDirection.DESCENDING);
-
-            List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(100));
-            List<EmbeddedPetition> result = new ArrayList<>();
-
-            for (Entity petition : petitionEntities) {
-                result.add(new EmbeddedPetition(petition));
-            }
-
-            return result;
     }
 
 

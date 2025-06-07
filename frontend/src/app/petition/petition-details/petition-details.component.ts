@@ -39,7 +39,7 @@ export class PetitionDetailsComponent implements OnInit {
 
     try {
       const accessToken = await this.userService.getAccessToken();
-      this.signers = await this.apiService.getSigners(accessToken, petitionId);
+      this.signers = await this.apiService.getSigners(accessToken, petitionId) || [];
     } catch (e) {
       this.error = 'Impossible de charger les signataires de la pétition';
     } finally {

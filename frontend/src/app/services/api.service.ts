@@ -40,11 +40,29 @@ export class ApiService {
     }
   }
 
-  async getPetitionList(accessToken: string, limit: number, cursor?: string): Promise<any> {
+  async getPetitionList(
+    accessToken: string,
+    limit: number,
+    cursor?: string,
+    sortBy?: string,
+    sortOrder?: string,
+    tag?: string
+  ): Promise<any> {
     let url = `${this.baseRealUrlBackend}/_ah/api/petitionApi/v1/list?access_token=${encodeURIComponent(accessToken)}&limit=${encodeURIComponent(limit)}`;
+    if (sortBy) {
+      url += `&sortBy=${encodeURIComponent(sortBy)}`;
+    }
+    if (sortOrder) {
+      url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+    }
+    if (tag) {
+      url += `&tag=${encodeURIComponent(tag)}`;
+    }
     if (cursor) {
       url += `&cursor=${encodeURIComponent(cursor)}`;
     }
+
+    console.log(url);
     const response = await fetch(url, {
       method: 'GET',
       headers: {

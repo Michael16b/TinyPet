@@ -1,12 +1,39 @@
 indexes:
-  # Recherche par tags
+  # PETITION
+
+  # Recherche par tags + date décroissante (page tag, page accueil filtrée tag)
   - kind: Petition
     properties:
       - name: tags
       - name: creationDate
         direction: desc
 
-  # Classement populaire
+  # Recherche par tags + date croissante (si besoin, optionnel)
+  - kind: Petition
+    properties:
+      - name: tags
+      - name: creationDate
+        direction: asc
+
+  # Recherche par tags + popularité décroissante (page tag triée populaire)
+  - kind: Petition
+    properties:
+      - name: tags
+      - name: signatureCount
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+  # Recherche par tags + popularité croissante (rare mais possible)
+  - kind: Petition
+    properties:
+      - name: tags
+      - name: signatureCount
+        direction: asc
+      - name: creationDate
+        direction: desc
+
+  # Classement populaire décroissant (page populaire)
   - kind: Petition
     properties:
       - name: signatureCount
@@ -14,24 +41,62 @@ indexes:
       - name: creationDate
         direction: desc
 
-  # Vérifier si un utilisateur a déjà signé
+  # Classement populaire croissant (si UI le propose)
+  - kind: Petition
+    properties:
+      - name: signatureCount
+        direction: asc
+      - name: creationDate
+        direction: desc
+
+  # Recherche par titre croissant (pour tri alpha)
+  - kind: Petition
+    properties:
+      - name: title
+        direction: asc
+      - name: creationDate
+        direction: desc
+
+  # Recherche par titre décroissant (rare mais possible)
+  - kind: Petition
+    properties:
+      - name: title
+        direction: desc
+      - name: creationDate
+        direction: desc
+
+  # SIGNATURE
+
+  # Vérifier si un utilisateur a déjà signé une pétition
   - kind: Signature
     properties:
       - name: petitionId
       - name: userEmail
 
-# Liste des signataires d'une pétition
+  # Liste des signataires d'une pétition, tri par date de signature décroissante
   - kind: Signature
     properties:
       - name: petitionId
       - name: signedAt
         direction: desc
 
-  # Liste des pétitions signées par un utilisateur
+  # Liste des signataires d'une pétition, tri par date de signature croissante (optionnel)
+  - kind: Signature
+    properties:
+      - name: petitionId
+      - name: signedAt
+        direction: asc
+
+  # Liste des pétitions signées par un utilisateur, tri par date décroissante
   - kind: Signature
     properties:
       - name: userEmail
       - name: signedAt
         direction: desc
 
-    
+  # Liste des pétitions signées par un utilisateur, tri par date croissante (optionnel)
+  - kind: Signature
+    properties:
+      - name: userEmail
+      - name: signedAt
+        direction: asc

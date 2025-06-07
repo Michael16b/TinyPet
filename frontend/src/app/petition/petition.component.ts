@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
 import {MatChip, MatChipSet} from '@angular/material/chips';
 import {Router} from '@angular/router';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-petition',
@@ -15,7 +16,8 @@ import {Router} from '@angular/router';
     MatChipSet,
     NgClass,
     NgForOf,
-    NgIf
+    NgIf,
+    FormsModule
   ],
   styleUrls: ['./petition.component.css']
 })
@@ -27,6 +29,10 @@ export class PetitionComponent implements OnInit {
   error: string = '';
   chipsColor: string = 'primary';
   expandedCardIds: Set<string> = new Set();
+
+  sortBy: string = 'signatureCount';
+  sortOrder: string = 'desc';
+  tagFilter: string = '';
 
   nextPageIsEmpty: boolean = false;
   private nextPageCache: any[] = [];
@@ -52,30 +58,27 @@ export class PetitionComponent implements OnInit {
 
     try {
       const accessToken = await this.userService.getAccessToken();
-      const response = await this.apiService.getPetitionList(accessToken, limit, cursor);
+      const response = await this.apiService.getPetitionList(
+        accessToken,
+        limit,
+        cursor,
+        this.sortBy,
+        this.sortOrder,
+        this.tagFilter?.trim() || undefined
+      );
 
       this.petitions = response.entities || [];
       this.nextCursor = response.nextCursor || null;
 
-      // Gestion du stack de cursors
-      if (!fromNavigationButton) {
-        this.cursorStack = [''];
-        this.currentCursorIndex = 0;
-      } else if (cursor !== undefined && this.cursorStack[this.currentCursorIndex] !== cursor) {
-        // Si on navigue vers une page déjà dans la pile, on ajuste l'index
-        const existingIdx = this.cursorStack.indexOf(cursor);
-        if (existingIdx !== -1) {
-          this.currentCursorIndex = existingIdx;
-        } else {
-          // Sinon, on ajoute le cursor (page suivante)
-          this.cursorStack.push(cursor);
-          this.currentCursorIndex = this.cursorStack.length - 1;
-        }
-      }
-
-      // Précharge la prochaine page si possible
       if (this.nextCursor) {
-        const nextPageResp = await this.apiService.getPetitionList(accessToken, limit, this.nextCursor);
+        const nextPageResp = await this.apiService.getPetitionList(
+          accessToken,
+          limit,
+          this.nextCursor,
+          this.sortBy,
+          this.sortOrder,
+          this.tagFilter?.trim() || undefined
+        );
         this.nextPageCache = nextPageResp.entities || [];
         this.nextPageIsEmpty = this.nextPageCache.length === 0;
       } else {
@@ -101,6 +104,23 @@ export class PetitionComponent implements OnInit {
       const prevCursor = this.cursorStack[this.currentCursorIndex];
       await this.loadPetitions(prevCursor, true);
     }
+  }
+
+  setSort(sortBy: string, sortOrder: string) {
+    if (this.sortBy !== sortBy || this.sortOrder !== sortOrder) {
+      this.sortBy = sortBy;
+      this.sortOrder = sortOrder;
+      this.loadPetitions();
+    }
+  }
+
+  async onTagSearch() {
+    await this.loadPetitions();
+  }
+
+  async clearTagFilter() {
+    this.tagFilter = '';
+    await this.loadPetitions();
   }
 
   toggleExpand(petitionId: string) {
