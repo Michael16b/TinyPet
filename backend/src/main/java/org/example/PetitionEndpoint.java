@@ -212,13 +212,21 @@ public PetitionResponse create(
 
             logger.info("petitionIds: " + petitionIds);
 
-            Query petitionQuery = new Query("Petition")
-                    .setFilter(new Query.FilterPredicate("id", Query.FilterOperator.IN, petitionIds));
 
-            List<Entity> petitions = datastore.prepare(petitionQuery)
-                    .asList(FetchOptions.Builder.withDefaults());
+            if (petitionIds.isEmpty()) {
+                logger.info("No signatures found for user: " + signedByUserEmail);
+                throw new ConflictException("Vous avez déjà signé cette pétition.");
+            } else {
+                Query petitionQuery = new Query("Petition")
+                        .setFilter(new Query.FilterPredicate("id", Query.FilterOperator.IN, petitionIds));
+                logger.info("Query for petitions signed by user: " + petitionQuery);
 
-            logger.info("Filtered petitions: " + petitions);
+                List<Entity> petitions = datastore.prepare(petitionQuery)
+                        .asList(FetchOptions.Builder.withDefaults());
+
+                logger.info("Filtered petitions: " + petitions);
+            }
+
         }
 
         if (userSearch != null && !userSearch.trim().isEmpty()) {
