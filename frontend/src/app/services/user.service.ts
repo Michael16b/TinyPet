@@ -10,9 +10,6 @@ export class UserService {
   private isLoggedIn: boolean = false;
   private tokenCheckStarted: boolean = false;
 
-
-
-
   constructor() {}
 
   setLoginCallback(cb: () => void) {

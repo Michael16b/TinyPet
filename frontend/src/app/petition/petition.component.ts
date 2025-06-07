@@ -44,8 +44,8 @@ export class PetitionComponent implements OnInit {
     private apiService: ApiService,
     private userService: UserService,
     private snackBar: MatSnackBar,
-    private router: Router
-  ) {}
+    private router: Router,
+    ) {}
 
   async ngOnInit() {
     await this.loadPetitions();
@@ -150,6 +150,7 @@ export class PetitionComponent implements OnInit {
   }
 
   async signPetition(petition: any) {
+
     try {
       const accessToken = this.userService.getAccessToken();
 
@@ -157,6 +158,9 @@ export class PetitionComponent implements OnInit {
 
       await this.loadPetitions();
     } catch {
+
     }
+
   }
+
 }
