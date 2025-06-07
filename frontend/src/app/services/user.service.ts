@@ -25,8 +25,8 @@ export class UserService {
     localStorage.removeItem('email');
   }
 
-  getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
+  getAccessToken(): string {
+    return <string>localStorage.getItem('access_token');
   }
 
 

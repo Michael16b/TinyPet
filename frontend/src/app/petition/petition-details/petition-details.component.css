@@ -1,0 +1,21 @@
+h2 {
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.card {
+  border-radius: 1rem;
+  transition: box-shadow .2s;
+}
+.card-title {
+  font-weight: 600;
+  color: #1565c0;
+}
+.card-body {
+  font-size: 1.1rem;
+}
+.fw-bold {
+  color: #1976d2;
+}
+.fa-users {
+  color: #1565c0;
+}

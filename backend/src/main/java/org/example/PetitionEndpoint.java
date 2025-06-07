@@ -1,6 +1,7 @@
 package org.example;
 
 import com.google.api.server.spi.config.*;
+import com.google.api.server.spi.response.ConflictException;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.datastore.*;
@@ -188,75 +189,75 @@ public PetitionResponse create(
     }
 
     @ApiMethod(name = "sign", httpMethod = "post", path = "sign")
-public PetitionResponse sign(
-        @Named("petitionId") long petitionId,
-        @Named("access_token") String token) throws Exception {
-        if (petitionId <= 0) {
-            throw new IllegalArgumentException("Invalid petition ID.");
-        }
-        GoogleIdToken.Payload payload = verifyToken(token);
-        ensureUserExists(payload);
-
-        String userEmail = payload.getEmail();
-        String firstName = payload.get("given_name") != null ? payload.get("given_name").toString() : "";
-        String lastName = payload.get("family_name") != null ? payload.get("family_name").toString() : "";
-
-        Key petitionKey = KeyFactory.createKey("Petition", petitionId);
-
-        // Vérifie si la personne a déjà signé
-        Query query = new Query("Signature")
-                .setFilter(Query.CompositeFilterOperator.and(
-                        new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId),
-                        new Query.FilterPredicate("userEmail", Query.FilterOperator.EQUAL, userEmail)
-                ));
-        if (!datastore.prepare(query).asList(FetchOptions.Builder.withDefaults()).isEmpty()) {
-            return new PetitionResponse("already_signed", "You have already signed this petition.", petitionId);
-        }
-
-        // Enregistre la signature avec nom/prénom
-        Entity signature = new Entity("Signature");
-        signature.setProperty("petitionId", petitionId);
-        signature.setProperty("userEmail", userEmail);
-        signature.setProperty("signedAt", new Date());
-        signature.setProperty("firstName", firstName);
-        signature.setProperty("lastName", lastName);
-        datastore.put(signature);
-
-        // Incrémente le compteur de signatures
-        int shardIndex = (int) (Math.random() * NUM_SHARDS);
-        String shardId = petitionId + "-shard-" + shardIndex;
-
-        Transaction txn = datastore.beginTransaction();
-        try {
-            Entity shard;
-            try {
-                shard = datastore.get(txn, KeyFactory.createKey("SignatureCounterShard", shardId));
-            } catch (EntityNotFoundException e) {
-                shard = new Entity("SignatureCounterShard", shardId);
-                shard.setProperty("petitionId", petitionId);
-                shard.setProperty("count", 0L);
+    public PetitionResponse sign(
+            @Named("petitionId") long petitionId,
+            @Named("access_token") String token) throws Exception, ConflictException {
+            if (petitionId <= 0) {
+                throw new IllegalArgumentException("Invalid petition ID.");
             }
-            long count = (Long) shard.getProperty("count");
-            shard.setProperty("count", count + 1);
-            datastore.put(txn, shard);
-            txn.commit();
+            GoogleIdToken.Payload payload = verifyToken(token);
+            ensureUserExists(payload);
+
+            String userEmail = payload.getEmail();
+            String firstName = payload.get("given_name") != null ? payload.get("given_name").toString() : "";
+            String lastName = payload.get("family_name") != null ? payload.get("family_name").toString() : "";
+
+            Key petitionKey = KeyFactory.createKey("Petition", petitionId);
+
+            // Vérifie si la personne a déjà signé
+            Query query = new Query("Signature")
+                    .setFilter(Query.CompositeFilterOperator.and(
+                            new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId),
+                            new Query.FilterPredicate("userEmail", Query.FilterOperator.EQUAL, userEmail)
+                    ));
+            if (!datastore.prepare(query).asList(FetchOptions.Builder.withDefaults()).isEmpty()) {
+                throw new ConflictException("Vous avez déjà signé cette pétition.");
+            }
+
+            // Enregistre la signature avec nom/prénom
+            Entity signature = new Entity("Signature");
+            signature.setProperty("petitionId", petitionId);
+            signature.setProperty("userEmail", userEmail);
+            signature.setProperty("signedAt", new Date());
+            signature.setProperty("firstName", firstName);
+            signature.setProperty("lastName", lastName);
+            datastore.put(signature);
+
+            // Incrémente le compteur de signatures
+            int shardIndex = (int) (Math.random() * NUM_SHARDS);
+            String shardId = petitionId + "-shard-" + shardIndex;
+
+            Transaction txn = datastore.beginTransaction();
+            try {
+                Entity shard;
+                try {
+                    shard = datastore.get(txn, KeyFactory.createKey("SignatureCounterShard", shardId));
+                } catch (EntityNotFoundException e) {
+                    shard = new Entity("SignatureCounterShard", shardId);
+                    shard.setProperty("petitionId", petitionId);
+                    shard.setProperty("count", 0L);
+                }
+                long count = (Long) shard.getProperty("count");
+                shard.setProperty("count", count + 1);
+                datastore.put(txn, shard);
+                txn.commit();
+            } finally {
+                if (txn.isActive()) txn.rollback();
+            }
+        Transaction countTxn = datastore.beginTransaction();
+        try {
+            Entity petition = datastore.get(countTxn, petitionKey);
+            long currentCount = (Long) petition.getProperty("signatureCount");
+            petition.setProperty("signatureCount", currentCount + 1);
+            datastore.put(countTxn, petition);
+            countTxn.commit();
         } finally {
-            if (txn.isActive()) txn.rollback();
+            if (countTxn.isActive()) countTxn.rollback();
         }
-    Transaction countTxn = datastore.beginTransaction();
-    try {
-        Entity petition = datastore.get(countTxn, petitionKey);
-        long currentCount = (Long) petition.getProperty("signatureCount");
-        petition.setProperty("signatureCount", currentCount + 1);
-        datastore.put(countTxn, petition);
-        countTxn.commit();
-    } finally {
-        if (countTxn.isActive()) countTxn.rollback();
+
+
+            return new PetitionResponse("success", "Petition signed successfully.", petitionId);
     }
-
-
-        return new PetitionResponse("success", "Petition signed successfully.", petitionId);
-}
 
 @ApiMethod(name = "getSigners", httpMethod = "get", path = "petition/{petitionId}/signers")
 public SignersResponse getSigners(
