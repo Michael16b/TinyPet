@@ -21,10 +21,11 @@ import {FormsModule} from '@angular/forms';
   ],
   styleUrls: ['./petition.component.css']
 })
+
+
 export class PetitionComponent implements OnInit {
   petitions: any[] = [];
   nextCursor: string | null = null;
-  prevCursor: string | null = null; // For future use
   loading: boolean = false;
   error: string = '';
   chipsColor: string = 'primary';
@@ -69,6 +70,19 @@ export class PetitionComponent implements OnInit {
 
       this.petitions = response.entities || [];
       this.nextCursor = response.nextCursor || null;
+
+      if (!fromNavigationButton) {
+        this.cursorStack = [''];
+        this.currentCursorIndex = 0;
+      } else if (cursor !== undefined && this.cursorStack[this.currentCursorIndex] !== cursor) {
+        const existingIdx = this.cursorStack.indexOf(cursor);
+        if (existingIdx !== -1) {
+          this.currentCursorIndex = existingIdx;
+        } else {
+          this.cursorStack.push(cursor);
+          this.currentCursorIndex = this.cursorStack.length - 1;
+        }
+      }
 
       if (this.nextCursor) {
         const nextPageResp = await this.apiService.getPetitionList(
@@ -145,6 +159,4 @@ export class PetitionComponent implements OnInit {
     } catch {
     }
   }
-
-
 }

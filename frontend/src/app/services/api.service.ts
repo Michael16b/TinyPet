@@ -61,8 +61,6 @@ export class ApiService {
     if (cursor) {
       url += `&cursor=${encodeURIComponent(cursor)}`;
     }
-
-    console.log(url);
     const response = await fetch(url, {
       method: 'GET',
       headers: {
