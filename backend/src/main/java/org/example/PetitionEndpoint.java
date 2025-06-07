@@ -66,46 +66,46 @@ public class PetitionEndpoint {
             }
         } catch (Exception e) {
             throw new UnauthorizedException("Token verification failed: " + e.getMessage());
+        }
     }
-}
 
-private void ensureUserExists(GoogleIdToken.Payload payload) {
-    String userId = payload.getSubject();
-    Key userKey = KeyFactory.createKey("User", userId);
-    
-    try {
-        datastore.get(userKey);
-    } catch (EntityNotFoundException e) {
-        Entity user = new Entity("User", userId);
-        user.setProperty("email", payload.getEmail());
-        user.setProperty("name", (String) payload.get("given_name"));
-        user.setProperty("family_name", (String) payload.get("family_name"));
-        user.setProperty("picture", (String) payload.get("picture"));
-        user.setProperty("createdAt", new Date());
-        datastore.put(user);
-    }
-}
+    private void ensureUserExists(GoogleIdToken.Payload payload) {
+        String userId = payload.getSubject();
+        Key userKey = KeyFactory.createKey("User", userId);
 
-private void initializeCounterShards(long petitionId) {
-    for (int i = 0; i < NUM_SHARDS; i++) {
-        String shardId = petitionId + "-shard-" + i;
-        Entity shard = new Entity("SignatureCounterShard", shardId);
-        shard.setProperty("petitionId", petitionId);
-        shard.setProperty("count", 0L);
-        datastore.put(shard);
+        try {
+            datastore.get(userKey);
+        } catch (EntityNotFoundException e) {
+            Entity user = new Entity("User", userId);
+            user.setProperty("email", payload.getEmail());
+            user.setProperty("name", (String) payload.get("given_name"));
+            user.setProperty("family_name", (String) payload.get("family_name"));
+            user.setProperty("picture", (String) payload.get("picture"));
+            user.setProperty("createdAt", new Date());
+            datastore.put(user);
+        }
     }
-}
 
-private long getSignatureCount(long petitionId) {
-    Query query = new Query("SignatureCounterShard")
-            .setFilter(new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId));
-    List<Entity> shards = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
-    long total = 0;
-    for (Entity shard : shards) {
-        total += (Long) shard.getProperty("count");
+    private void initializeCounterShards(long petitionId) {
+        for (int i = 0; i < NUM_SHARDS; i++) {
+            String shardId = petitionId + "-shard-" + i;
+            Entity shard = new Entity("SignatureCounterShard", shardId);
+            shard.setProperty("petitionId", petitionId);
+            shard.setProperty("count", 0L);
+            datastore.put(shard);
+        }
     }
-    return total;
-}
+
+    private long getSignatureCount(long petitionId) {
+        Query query = new Query("SignatureCounterShard")
+                .setFilter(new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId));
+        List<Entity> shards = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+        long total = 0;
+        for (Entity shard : shards) {
+            total += (Long) shard.getProperty("count");
+        }
+        return total;
+    }
 
 
 
@@ -259,67 +259,67 @@ public PetitionResponse create(
             return new PetitionResponse("success", "Petition signed successfully.", petitionId);
     }
 
-@ApiMethod(name = "getSigners", httpMethod = "get", path = "petition/{petitionId}/signers")
-public SignersResponse getSigners(
-        @Named("petitionId") long petitionId,
-        @Named("access_token") String token) throws Exception {
+    @ApiMethod(name = "getSigners", httpMethod = "get", path = "petition/{petitionId}/signers")
+    public SignersResponse getSigners(
+            @Named("petitionId") long petitionId,
+            @Named("access_token") String token) throws Exception {
 
-        verifyToken(token);
-        Query query = new Query("Signature")
-                .setFilter(new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId))
-                .addSort("signedAt", Query.SortDirection.DESCENDING);
+            verifyToken(token);
+            Query query = new Query("Signature")
+                    .setFilter(new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId))
+                    .addSort("signedAt", Query.SortDirection.DESCENDING);
 
-        List<Entity> signatureEntities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
-        List<SignerInfo> signers = new ArrayList<>();
+            List<Entity> signatureEntities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+            List<SignerInfo> signers = new ArrayList<>();
 
-        for (Entity sig : signatureEntities) {
-            signers.add(new SignerInfo(sig));
-        }
+            for (Entity sig : signatureEntities) {
+                signers.add(new SignerInfo(sig));
+            }
 
-        long totalSignatures = getSignatureCount(petitionId);
+            long totalSignatures = getSignatureCount(petitionId);
 
 
-        return new SignersResponse(totalSignatures, signers);
-}
+            return new SignersResponse(totalSignatures, signers);
+    }
 
-@ApiMethod(name = "searchByTag", httpMethod = "get", path = "petition/searchByTag")
-public List<EmbeddedPetition> searchByTag(
-        @Named("tag") String tag,
-        @Named("access_token") String token) throws Exception {
-        verifyToken(token);
+    @ApiMethod(name = "searchByTag", httpMethod = "get", path = "petition/searchByTag")
+    public List<EmbeddedPetition> searchByTag(
+            @Named("tag") String tag,
+            @Named("access_token") String token) throws Exception {
+            verifyToken(token);
 
-        Query query = new Query("Petition")
-                .setFilter(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag))
-                .addSort("creationDate", Query.SortDirection.DESCENDING);
+            Query query = new Query("Petition")
+                    .setFilter(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag))
+                    .addSort("creationDate", Query.SortDirection.DESCENDING);
 
-        List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
-        List<EmbeddedPetition> result = new ArrayList<>();
+            List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+            List<EmbeddedPetition> result = new ArrayList<>();
 
-        for (Entity petition : petitionEntities) {
-            result.add(new EmbeddedPetition(petition));
-        }
+            for (Entity petition : petitionEntities) {
+                result.add(new EmbeddedPetition(petition));
+            }
 
-        return result;
-}
+            return result;
+    }
 
-@ApiMethod(name = "popular", httpMethod = "get", path = "petition/popular")
-public List<EmbeddedPetition> getPopularPetitions(
-        @Named("access_token") String token) throws Exception {
-        verifyToken(token);
+    @ApiMethod(name = "popular", httpMethod = "get", path = "petition/popular")
+    public List<EmbeddedPetition> getPopularPetitions(
+            @Named("access_token") String token) throws Exception {
+            verifyToken(token);
 
-        Query query = new Query("Petition")
-                .addSort("signatureCount", Query.SortDirection.DESCENDING)
-                .addSort("creationDate", Query.SortDirection.DESCENDING);
+            Query query = new Query("Petition")
+                    .addSort("signatureCount", Query.SortDirection.DESCENDING)
+                    .addSort("creationDate", Query.SortDirection.DESCENDING);
 
-        List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(100));
-        List<EmbeddedPetition> result = new ArrayList<>();
+            List<Entity> petitionEntities = datastore.prepare(query).asList(FetchOptions.Builder.withLimit(100));
+            List<EmbeddedPetition> result = new ArrayList<>();
 
-        for (Entity petition : petitionEntities) {
-            result.add(new EmbeddedPetition(petition));
-        }
+            for (Entity petition : petitionEntities) {
+                result.add(new EmbeddedPetition(petition));
+            }
 
-        return result;
-}
+            return result;
+    }
 
 
 }
