@@ -39,12 +39,6 @@
       </button>
       <button
         class="btn"
-        [ngClass]="{'btn-success': activeFilter === 'mine', 'btn-outline-success': activeFilter !== 'mine'}"
-        (click)="showMyPetitions()">
-        Mes pétitions
-      </button>
-      <button
-        class="btn"
         [ngClass]="{'btn-info': activeFilter === 'signed', 'btn-outline-info': activeFilter !== 'signed'}"
         (click)="showMySignedPetitions()">
         Mes pétitions signées

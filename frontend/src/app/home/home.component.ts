@@ -22,7 +22,7 @@ export class HomeComponent {
   constructor(public dialog: MatDialog, private apiService : ApiService, private router : Router, public userService : UserService) {}
 
   openCreatePetitionDialog(): void {
-    if (!this.loggedIn) {
+    if (!this.userService.getIsLoggedIn()) {
       const dialogRef = this.dialog.open(LoginDialogComponent, {
         width: '400px',
         data: {

@@ -104,7 +104,10 @@ export class PetitionComponent implements OnInit {
           this.sortBy,
           this.sortOrder,
           this.tagFilter?.trim() || undefined,
-          this.userEmail?.trim() || undefined
+          this.userEmail?.trim() || undefined,
+          this.userSearch?.trim() || undefined,
+          userSearchField?.trim() || undefined,
+          signedByUserEmail?.trim() || undefined
         );
         this.nextPageCache = nextPageResp.entities || [];
         this.nextPageIsEmpty = this.nextPageCache.length === 0;
@@ -177,12 +180,6 @@ export class PetitionComponent implements OnInit {
     this.activeFilter = 'all';
     this.userEmail = undefined;
     this.loadPetitions();
-  }
-
-  showMyPetitions() {
-    this.activeFilter = 'mine';
-    this.userEmail = this.userService.getEmail();
-    this.loadPetitions(undefined, false, this.userService.getEmail()?.trim());
   }
 
   showMySignedPetitions() {

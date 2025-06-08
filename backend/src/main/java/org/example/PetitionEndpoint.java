@@ -2,6 +2,7 @@ package org.example;
 
 import com.google.api.server.spi.config.*;
 import com.google.api.server.spi.response.ConflictException;
+import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.datastore.*;
@@ -198,35 +199,70 @@ public PetitionResponse create(
         }
 
         if (signedByUserEmail != null && !signedByUserEmail.trim().isEmpty()) {
+            // 1. Récupérer les IDs de pétitions signées (max 30)
             Query signatureQuery = new Query("Signature")
                     .setFilter(new Query.FilterPredicate("userEmail", Query.FilterOperator.EQUAL, signedByUserEmail));
             List<Entity> userSignatures = datastore.prepare(signatureQuery)
-                    .asList(FetchOptions.Builder.withDefaults());
+                    .asList(FetchOptions.Builder.withLimit(30)); // Limite de 30 signatures
 
-            logger.info("Query for signatures: " + signatureQuery);
-            logger.info("userSignatures: " + userSignatures);
-
-            List<Object> petitionIds = userSignatures.stream()
-                    .map(sig -> sig.getProperty("petitionId"))
-                    .collect(Collectors.toList());
-
-            logger.info("petitionIds: " + petitionIds);
-
+            List<Long> petitionIds = userSignatures.stream()
+                    .map(sig -> (Long) sig.getProperty("petitionId"))
+                    .filter(Objects::nonNull)
+                    .toList();
 
             if (petitionIds.isEmpty()) {
                 logger.info("No signatures found for user: " + signedByUserEmail);
-                throw new ConflictException("Vous avez déjà signé cette pétition.");
-            } else {
-                Query petitionQuery = new Query("Petition")
-                        .setFilter(new Query.FilterPredicate("id", Query.FilterOperator.IN, petitionIds));
-                logger.info("Query for petitions signed by user: " + petitionQuery);
-
-                List<Entity> petitions = datastore.prepare(petitionQuery)
-                        .asList(FetchOptions.Builder.withDefaults());
-
-                logger.info("Filtered petitions: " + petitions);
+                throw new NotFoundException("Aucune pétition signée trouvée pour cet utilisateur.");
             }
 
+            // 2. Construire la liste des clés à partir des IDs
+            List<Key> petitionKeys = petitionIds.stream()
+                    .map(id -> KeyFactory.createKey("Petition", id))
+                    .toList();
+
+            // 3. Requête sur Petition avec filtre IN sur la clé (max 30)
+            Query petitionQuery = new Query("Petition")
+                    .setFilter(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, Query.FilterOperator.IN, petitionKeys));
+
+            // 4. Appliquer les autres filtres si besoin (tag, creator, etc.) en mémoire ou dans la requête si possible
+
+            // 5. Faire le tri (en mémoire si besoin)
+            List<Entity> petitions = new ArrayList<>(datastore.prepare(petitionQuery).asList(FetchOptions.Builder.withDefaults()));
+            // Tri en mémoire si nécessaire
+            if (sortBy != null && !sortBy.isEmpty()) {
+                petitions.sort((e1, e2) -> {
+                    Object val1 = e1.getProperty(sortBy);
+                    Object val2 = e2.getProperty(sortBy);
+
+                    // Pour des propriétés numériques (Long, Integer, Double, etc.)
+                    if (val1 instanceof Number && val2 instanceof Number) {
+                        double d1 = ((Number) val1).doubleValue();
+                        double d2 = ((Number) val2).doubleValue();
+                        return "desc".equalsIgnoreCase(sortOrder) ? Double.compare(d2, d1) : Double.compare(d1, d2);
+                    }
+
+                    // Pour des propriétés String ou autres types Comparable
+                    if (val1 instanceof Comparable && val2 instanceof Comparable) {
+                        @SuppressWarnings("unchecked")
+                        int cmp = ((Comparable<Object>) val1).compareTo(val2);
+                        return "desc".equalsIgnoreCase(sortOrder) ? -cmp : cmp;
+                    }
+
+                    // nulls last
+                    if (val1 == null && val2 == null) return 0;
+                    if (val1 == null) return 1;
+                    if (val2 == null) return -1;
+                    return 0;
+                });
+            }
+
+            // 6. Mapping & réponse (ignorer la limite paramètre, retourner tout ce qu’on a)
+            List<EmbeddedPetition> embeddedPetitions = getEmbeddedPetitions(petitions);
+
+            PetitionResponse response = new PetitionResponse();
+            response.setEntities(embeddedPetitions);
+            response.setNextCursor(null); // Pas de cursor car tout est renvoyé en une fois
+            return response;
         }
 
         if (userSearch != null && !userSearch.trim().isEmpty()) {
@@ -248,6 +284,7 @@ public PetitionResponse create(
         }
 
         PreparedQuery pq = datastore.prepare(query);
+        logger.info(": " + pq.toString());
         QueryResultList<Entity> entities = pq.asQueryResultList(fetchOptions);
         List<EmbeddedPetition> embeddedPetitions = getEmbeddedPetitions(entities);
         Cursor nextCursor = entities.getCursor();
