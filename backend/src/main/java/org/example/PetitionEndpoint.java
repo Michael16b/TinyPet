@@ -150,151 +150,152 @@ public PetitionResponse create(
         );
 }
 
-    @ApiMethod(name = "list", httpMethod = "get", path = "list")
-    public PetitionResponse list(
-            @Named("access_token") String token,
-            @Nullable @Named("limit") Integer limit,
-            @Nullable @Named("sortBy") String sortBy,
-            @Nullable @Named("sortOrder") String sortOrder,
-            @Nullable @Named("tag") String tag,
-            @Nullable @Named("signedByUserEmail") String signedByUserEmail,
-            @Nullable @Named("userEmail") String userEmail,
-            @Nullable @Named("userSearch") String userSearch,
-            @Nullable @Named("userSearchField") String userSearchField,
-            @Nullable @Named("cursor") String cursor
-    ) throws Exception {
+@ApiMethod(name = "list", httpMethod = "get", path = "list")
+public PetitionResponse list(
+        @Named("access_token") String token,
+        @Nullable @Named("limit") Integer limit,
+        @Nullable @Named("sortBy") String sortBy,
+        @Nullable @Named("sortOrder") String sortOrder,
+        @Nullable @Named("tag") String tag,
+        @Nullable @Named("signedByUserEmail") String signedByUserEmail,
+        @Nullable @Named("userEmail") String userEmail,
+        @Nullable @Named("userSearch") String userSearch,
+        @Nullable @Named("userSearchField") String userSearchField,
+        @Nullable @Named("cursor") String cursor
+) throws Exception {
 
-        verifyToken(token);
+    verifyToken(token);
+    int pageSize = (limit != null) ? limit : 20;
 
-        int pageSize = (limit != null) ? limit : 20;
+    logger.info("Listing petitions with parameters: " +
+            "limit=" + pageSize +
+            ", sortBy=" + sortBy +
+            ", sortOrder=" + sortOrder +
+            ", tag=" + tag +
+            ", signedByUserEmail=" + signedByUserEmail +
+            ", userEmail=" + userEmail +
+            ", userSearch=" + userSearch +
+            ", userSearchField=" + userSearchField +
+            ", cursor=" + cursor);
 
-        logger.info("Listing petitions with parameters: " +
-                "limit=" + pageSize +
-                ", sortBy=" + sortBy +
-                ", sortOrder=" + sortOrder +
-                ", tag=" + tag +
-                ", signedByUserEmail=" + signedByUserEmail +
-                ", userEmail=" + userEmail +
-                ", userSearch=" + userSearch +
-                ", userSearchField=" + userSearchField +
-                ", cursor=" + cursor);
+    // Cas spécial : signedByUserEmail
+    if (signedByUserEmail != null && !signedByUserEmail.trim().isEmpty()) {
+        List<Key> petitionKeys = getPetitionKeysSignedByUser(signedByUserEmail);
+        Query petitionQuery = new Query("Petition")
+                .setFilter(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, Query.FilterOperator.IN, petitionKeys));
 
-        Query query = new Query("Petition");
+        applyFilters(petitionQuery, tag, userEmail, userSearch, userSearchField);
 
-        if (tag != null && !tag.trim().isEmpty()) {
-            query.setFilter(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag));
-        }
-
-        String sortField = (sortBy != null && !sortBy.isEmpty()) ? sortBy : "creationDate";
-        Query.SortDirection direction =
-                (sortOrder != null && sortOrder.equalsIgnoreCase("asc")) ?
-                        Query.SortDirection.ASCENDING : Query.SortDirection.DESCENDING;
-        query.addSort(sortField, direction);
-
-        if (!"creationDate".equals(sortField)) {
-            query.addSort("creationDate", Query.SortDirection.DESCENDING);
-        }
-        if (userEmail != null && !userEmail.trim().isEmpty()) {
-            query.setFilter(new Query.FilterPredicate("creatorEmail", Query.FilterOperator.EQUAL, userEmail));
-        }
-
-        if (signedByUserEmail != null && !signedByUserEmail.trim().isEmpty()) {
-            // 1. Récupérer les IDs de pétitions signées (max 30)
-            Query signatureQuery = new Query("Signature")
-                    .setFilter(new Query.FilterPredicate("userEmail", Query.FilterOperator.EQUAL, signedByUserEmail));
-            List<Entity> userSignatures = datastore.prepare(signatureQuery)
-                    .asList(FetchOptions.Builder.withLimit(30)); // Limite de 30 signatures
-
-            List<Long> petitionIds = userSignatures.stream()
-                    .map(sig -> (Long) sig.getProperty("petitionId"))
-                    .filter(Objects::nonNull)
-                    .toList();
-
-            if (petitionIds.isEmpty()) {
-                logger.info("No signatures found for user: " + signedByUserEmail);
-                throw new NotFoundException("Aucune pétition signée trouvée pour cet utilisateur.");
-            }
-
-            // 2. Construire la liste des clés à partir des IDs
-            List<Key> petitionKeys = petitionIds.stream()
-                    .map(id -> KeyFactory.createKey("Petition", id))
-                    .toList();
-
-            // 3. Requête sur Petition avec filtre IN sur la clé (max 30)
-            Query petitionQuery = new Query("Petition")
-                    .setFilter(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, Query.FilterOperator.IN, petitionKeys));
-
-            // 4. Appliquer les autres filtres si besoin (tag, creator, etc.) en mémoire ou dans la requête si possible
-
-            // 5. Faire le tri (en mémoire si besoin)
-            List<Entity> petitions = new ArrayList<>(datastore.prepare(petitionQuery).asList(FetchOptions.Builder.withDefaults()));
-            // Tri en mémoire si nécessaire
-            if (sortBy != null && !sortBy.isEmpty()) {
-                petitions.sort((e1, e2) -> {
-                    Object val1 = e1.getProperty(sortBy);
-                    Object val2 = e2.getProperty(sortBy);
-
-                    // Pour des propriétés numériques (Long, Integer, Double, etc.)
-                    if (val1 instanceof Number && val2 instanceof Number) {
-                        double d1 = ((Number) val1).doubleValue();
-                        double d2 = ((Number) val2).doubleValue();
-                        return "desc".equalsIgnoreCase(sortOrder) ? Double.compare(d2, d1) : Double.compare(d1, d2);
-                    }
-
-                    // Pour des propriétés String ou autres types Comparable
-                    if (val1 instanceof Comparable && val2 instanceof Comparable) {
-                        @SuppressWarnings("unchecked")
-                        int cmp = ((Comparable<Object>) val1).compareTo(val2);
-                        return "desc".equalsIgnoreCase(sortOrder) ? -cmp : cmp;
-                    }
-
-                    // nulls last
-                    if (val1 == null && val2 == null) return 0;
-                    if (val1 == null) return 1;
-                    if (val2 == null) return -1;
-                    return 0;
-                });
-            }
-
-            // 6. Mapping & réponse (ignorer la limite paramètre, retourner tout ce qu’on a)
-            List<EmbeddedPetition> embeddedPetitions = getEmbeddedPetitions(petitions);
-
-            PetitionResponse response = new PetitionResponse();
-            response.setEntities(embeddedPetitions);
-            response.setNextCursor(null); // Pas de cursor car tout est renvoyé en une fois
-            return response;
-        }
-
-        if (userSearch != null && !userSearch.trim().isEmpty()) {
-            if (userSearchField != null && userSearchField.equals("creatorFirstName")) {
-                logger.info("Filtering by creatorFirstName: " + userSearch);
-                query.setFilter(new Query.FilterPredicate("creatorFirstName", Query.FilterOperator.EQUAL, userSearch));
-            } else if (userSearchField != null && userSearchField.equals("creatorLastName")) {
-                logger.info("Filtering by creatorLastName: " + userSearch);
-                query.setFilter(new Query.FilterPredicate("creatorLastName", Query.FilterOperator.EQUAL, userSearch));
-            } else  {
-                logger.info("Filtering by creatorEmail: " + userSearch);
-                query.setFilter(new Query.FilterPredicate("creatorEmail", Query.FilterOperator.EQUAL, userSearch));
-            }
-        }
-
-        FetchOptions fetchOptions = FetchOptions.Builder.withLimit(pageSize);
-        if (cursor != null && !cursor.isEmpty()) {
-            fetchOptions.startCursor(Cursor.fromWebSafeString(cursor));
-        }
-
-        PreparedQuery pq = datastore.prepare(query);
-        logger.info(": " + pq.toString());
-        QueryResultList<Entity> entities = pq.asQueryResultList(fetchOptions);
-        List<EmbeddedPetition> embeddedPetitions = getEmbeddedPetitions(entities);
-        Cursor nextCursor = entities.getCursor();
+        List<Entity> petitions = new ArrayList<>(datastore.prepare(petitionQuery).asList(FetchOptions.Builder.withDefaults()));
+        sortEntities(petitions, sortBy, sortOrder);
 
         PetitionResponse response = new PetitionResponse();
-        response.setEntities(embeddedPetitions);
-        response.setNextCursor(nextCursor != null ? nextCursor.toWebSafeString() : null);
-
+        response.setEntities(getEmbeddedPetitions(petitions));
+        response.setNextCursor(null);
         return response;
     }
+
+    // Requête classique
+    Query query = new Query("Petition");
+    applyFilters(query, tag, userEmail, userSearch, userSearchField);
+    applySort(query, sortBy, sortOrder);
+
+    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(pageSize);
+    if (cursor != null && !cursor.isEmpty()) {
+        fetchOptions.startCursor(Cursor.fromWebSafeString(cursor));
+    }
+
+    QueryResultList<Entity> entities = datastore.prepare(query).asQueryResultList(fetchOptions);
+    PetitionResponse response = new PetitionResponse();
+    response.setEntities(getEmbeddedPetitions(entities));
+    response.setNextCursor(entities.getCursor() != null ? entities.getCursor().toWebSafeString() : null);
+
+    return response;
+}
+private List<Key> getPetitionKeysSignedByUser(String email) throws NotFoundException {
+    Query signatureQuery = new Query("Signature")
+        .setFilter(new Query.FilterPredicate("userEmail", Query.FilterOperator.EQUAL, email));
+
+    List<Entity> signatures = datastore.prepare(signatureQuery)
+        .asList(FetchOptions.Builder.withLimit(30));
+
+    List<Long> petitionIds = signatures.stream()
+        .map(sig -> (Long) sig.getProperty("petitionId"))
+        .filter(Objects::nonNull)
+        .toList();
+
+    if (petitionIds.isEmpty()) {
+        logger.info("No signatures found for user: " + email);
+        throw new NotFoundException("Aucune pétition signée trouvée pour cet utilisateur.");
+    }
+
+    return petitionIds.stream()
+        .map(id -> KeyFactory.createKey("Petition", id))
+        .toList();
+}
+private void applyFilters(Query query, String tag, String userEmail, String userSearch, String userSearchField) {
+    List<Query.Filter> filters = new ArrayList<>();
+
+    if (tag != null && !tag.trim().isEmpty()) {
+        filters.add(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag));
+    }
+
+    if (userEmail != null && !userEmail.trim().isEmpty()) {
+        filters.add(new Query.FilterPredicate("creatorEmail", Query.FilterOperator.EQUAL, userEmail));
+    }
+
+    if (userSearch != null && !userSearch.trim().isEmpty()) {
+        String field = switch (userSearchField) {
+            case "creatorFirstName" -> "creatorFirstName";
+            case "creatorLastName" -> "creatorLastName";
+            default -> "creatorEmail";
+        };
+        filters.add(new Query.FilterPredicate(field, Query.FilterOperator.EQUAL, userSearch));
+    }
+
+    if (!filters.isEmpty()) {
+        query.setFilter(filters.size() == 1 ? filters.get(0) : Query.CompositeFilterOperator.and(filters));
+    }
+}
+
+private void applySort(Query query, String sortBy, String sortOrder) {
+    String sortField = (sortBy != null && !sortBy.isEmpty()) ? sortBy : "creationDate";
+    Query.SortDirection direction = "asc".equalsIgnoreCase(sortOrder)
+            ? Query.SortDirection.ASCENDING
+            : Query.SortDirection.DESCENDING;
+
+    query.addSort(sortField, direction);
+
+    if (!"creationDate".equals(sortField)) {
+        query.addSort("creationDate", Query.SortDirection.DESCENDING);
+    }
+}
+private void sortEntities(List<Entity> entities, String sortBy, String sortOrder) {
+    if (sortBy == null || sortBy.isEmpty()) return;
+
+    entities.sort((e1, e2) -> {
+        Object val1 = e1.getProperty(sortBy);
+        Object val2 = e2.getProperty(sortBy);
+
+        if (val1 == null && val2 == null) return 0;
+        if (val1 == null) return 1;
+        if (val2 == null) return -1;
+
+        if (val1 instanceof Number && val2 instanceof Number) {
+            return "desc".equalsIgnoreCase(sortOrder)
+                    ? Double.compare(((Number) val2).doubleValue(), ((Number) val1).doubleValue())
+                    : Double.compare(((Number) val1).doubleValue(), ((Number) val2).doubleValue());
+        }
+
+        if (val1 instanceof Comparable && val2 instanceof Comparable) {
+            @SuppressWarnings("unchecked")
+            int cmp = ((Comparable<Object>) val1).compareTo(val2);
+            return "desc".equalsIgnoreCase(sortOrder) ? -cmp : cmp;
+        }
+
+        return 0;
+    });
+}
 
 
     @ApiMethod(name = "sign", httpMethod = "post", path = "sign")
