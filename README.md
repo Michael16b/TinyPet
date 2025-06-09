@@ -1,4 +1,7 @@
-# Tiny Pet - Web Application for Petitions
+# Tiny Pet - Web Application for Petitions 
+# ATALLA FADIA
+# BESILY MICHAEL
+# JAN CHARLÈNE
 
 ## Description
 Une application web permettant de créer et de signer des pétitions, inspirée des plateformes telles qu'Avaaz ou Change.org. L'application prend en charge l'authentification des utilisateurs et la gestion de millions de pétitions et signatures.
