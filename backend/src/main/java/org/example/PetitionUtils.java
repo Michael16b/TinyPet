@@ -28,20 +28,7 @@ public class PetitionUtils {
         if (petitionKeys != null && !petitionKeys.isEmpty()) {
             filters.add(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, Query.FilterOperator.IN, petitionKeys));
         }
-        if (tag != null && !tag.trim().isEmpty()) {
-            filters.add(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag));
-        }
-        if (userEmail != null && !userEmail.trim().isEmpty()) {
-            filters.add(new Query.FilterPredicate("creatorEmail", Query.FilterOperator.EQUAL, userEmail));
-        }
-        if (userSearch != null && !userSearch.trim().isEmpty()) {
-            String field = switch (userSearchField) {
-                case "creatorFirstName" -> "creatorFirstName";
-                case "creatorLastName" -> "creatorLastName";
-                default -> "creatorEmail";
-            };
-            filters.add(new Query.FilterPredicate(field, Query.FilterOperator.EQUAL, userSearch));
-        }
+        filterDetails(tag, userEmail, userSearch, userSearchField, filters);
 
         if (filters.isEmpty()) {
             return null;
@@ -49,6 +36,25 @@ public class PetitionUtils {
             return filters.get(0);
         } else {
             return new Query.CompositeFilter(Query.CompositeFilterOperator.AND, filters);
+        }
+    }
+
+    static void filterDetails(String tag, String userEmail, String userSearch, String userSearchField, List<Query.Filter> filters) {
+        if (tag != null && !tag.trim().isEmpty()) {
+            filters.add(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag));
+        }
+
+        if (userEmail != null && !userEmail.trim().isEmpty()) {
+            filters.add(new Query.FilterPredicate("creatorEmail", Query.FilterOperator.EQUAL, userEmail));
+        }
+
+        if (userSearch != null && !userSearch.trim().isEmpty()) {
+            String field = switch (userSearchField) {
+                case "creatorFirstName" -> "creatorFirstName";
+                case "creatorLastName" -> "creatorLastName";
+                default -> "creatorEmail";
+            };
+            filters.add(new Query.FilterPredicate(field, Query.FilterOperator.EQUAL, userSearch));
         }
     }
 }

@@ -184,16 +184,16 @@ export class PetitionComponent implements OnInit {
   showAllPetitions() {
     this.activeFilter = 'all';
     this.userEmail = undefined;
-    this.loadPetitions();
+    this.loadPetitions(undefined, false, undefined, this.userSearchField, undefined);
   }
 
   showMySignedPetitions() {
     this.activeFilter = 'signed';
-    this.loadPetitions(undefined, false, undefined, undefined, this.userService.getEmail()?.trim());
+    this.loadPetitions(undefined, false, undefined, this.userSearchField, this.userService.getEmail()?.trim());
   }
 
   onUserSearch() {
-    this.loadPetitions(undefined, false, undefined, this.userSearchField, this.userSearch.trim() || undefined);
+    this.loadPetitions(undefined, false, undefined, this.userSearchField, undefined);
   }
 
   clearUserSearch() {

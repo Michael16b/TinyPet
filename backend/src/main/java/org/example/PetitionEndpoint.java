@@ -236,29 +236,16 @@ private List<Key> getPetitionKeysSignedByUser(String email) throws NotFoundExcep
 private void applyFilters(Query query, String tag, String userEmail, String userSearch, String userSearchField) {
     List<Query.Filter> filters = new ArrayList<>();
 
-    if (tag != null && !tag.trim().isEmpty()) {
-        filters.add(new Query.FilterPredicate("tags", Query.FilterOperator.EQUAL, tag));
-    }
-
-    if (userEmail != null && !userEmail.trim().isEmpty()) {
-        filters.add(new Query.FilterPredicate("creatorEmail", Query.FilterOperator.EQUAL, userEmail));
-    }
-
-    if (userSearch != null && !userSearch.trim().isEmpty()) {
-        String field = switch (userSearchField) {
-            case "creatorFirstName" -> "creatorFirstName";
-            case "creatorLastName" -> "creatorLastName";
-            default -> "creatorEmail";
-        };
-        filters.add(new Query.FilterPredicate(field, Query.FilterOperator.EQUAL, userSearch));
-    }
+    PetitionUtils.filterDetails(tag, userEmail, userSearch, userSearchField, filters);
 
     if (!filters.isEmpty()) {
         query.setFilter(filters.size() == 1 ? filters.get(0) : Query.CompositeFilterOperator.and(filters));
     }
 }
 
-private void applySort(Query query, String sortBy, String sortOrder) {
+
+
+    private void applySort(Query query, String sortBy, String sortOrder) {
     String sortField = (sortBy != null && !sortBy.isEmpty()) ? sortBy : "creationDate";
     Query.SortDirection direction = "asc".equalsIgnoreCase(sortOrder)
             ? Query.SortDirection.ASCENDING
