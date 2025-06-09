@@ -1,0 +1,51 @@
+.card {
+  border-radius: 1rem;
+  transition: box-shadow .2s;
+  .card-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 0 !important;
+  }
+}
+
+mat-chip-set {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+.blue-chip {
+  margin-right: 0.3rem !important;
+  color: #fff !important;
+  font-weight: bold;
+  border-radius: 2rem !important;
+  padding: 0 1.1rem !important;
+  font-size: 1rem;
+  border: none !important;
+  outline: none !important;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+  &:hover {
+    transform: translateY(-2px) scale(1.04);
+  }
+}
+.btn-toggle-content {
+  color: #1565c0;
+  border: none !important;
+  background: transparent !important;
+  font-size: 1.2rem;
+  padding: 0.25rem 0.6rem;
+  box-shadow: none !important;
+  outline: none !important;
+  &:hover, &:focus-visible {
+    background: #e3f2fd;
+    border-radius: 50%;
+  }
+}
+.btn-outline-primary {
+  border-width: 2px;
+}
+.petition-content-detail {
+  background: #f8fafc;
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  border-top: 1px solid #e3e3e3;
+}

@@ -1,0 +1,92 @@
+<div class="container my-4">
+  <h2 class="text-center mb-4">Top 100 des pétitions</h2>
+
+  <div *ngIf="loading" class="text-center my-2">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div *ngIf="error" class="alert alert-danger">{{error}}</div>
+
+  <div class="d-flex justify-content-end mb-3">
+    <div class="btn-group">
+      <button
+        class="btn"
+        [ngClass]="{'btn-primary': sortOrder === 'desc', 'btn-outline-primary': sortOrder !== 'desc'}"
+        (click)="setSortOrder('desc')"
+      >
+        <i class="fas fa-calendar-alt me-2"></i>Date décroissante
+      </button>
+      <button
+        class="btn"
+        [ngClass]="{'btn-primary': sortOrder === 'asc', 'btn-outline-primary': sortOrder !== 'asc'}"
+        (click)="setSortOrder('asc')"
+      >
+        <i class="fas fa-calendar me-2"></i>Date croissante
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && petitions.length === 0" class="alert alert-info text-center my-5">
+    <i class="fas fa-info-circle me-2"></i>
+    Aucune pétition trouvée.
+  </div>
+
+  <div class="row gy-4" *ngIf="!loading && petitions.length > 0">
+    <div *ngFor="let petition of petitions" class="col-12">
+      <div class="card shadow-sm position-relative h-100">
+        <div class="card-body">
+          <div class="d-flex flex-row align-items-start justify-content-between">
+            <div class="flex-grow-1 pe-3">
+              <div class="d-flex align-items-center mb-1">
+                <h4 class="card-title mb-0 me-2">{{petition.title}}</h4>
+              </div>
+              <div class="mb-1 text-muted" style="font-size: 1rem;">
+                Par {{petition.creatorFirstName}} {{petition.creatorLastName}}
+              </div>
+              <div class="mb-2" *ngIf="petition.tags && petition.tags.length > 0">
+                <mat-chip-set aria-label="Liste des tags">
+                  <mat-chip *ngFor="let tag of petition.tags" class="blue-chip">{{tag}}</mat-chip>
+                </mat-chip-set>
+              </div>
+            </div>
+            <div class="d-flex flex-column align-items-end justify-content-between">
+              <span class="fw-bold fs-4 text-primary mb-1">
+                <i class="fas fa-signature me-1"></i>{{petition.signatureCount}}
+              </span>
+              <span class="text-muted mb-2" style="font-size: 0.85rem;">
+                {{petition.creationDate | date:'dd/MM/yyyy HH:mm'}}
+              </span>
+              <button
+                class="btn btn-outline-primary btn-sm mb-2"
+                (click)="showMoreDetails(petition)"
+                title="Plus de détails"
+                style="border-radius: 50%; width: 2.2rem; height: 2.2rem;"
+              >
+                <i class="fas fa-ellipsis-h"></i>
+              </button>
+              <button
+                class="btn btn-toggle-content"
+                (click)="toggleExpand(petition.id)"
+                [attr.aria-expanded]="expandedCardIds.has(petition.id)"
+                title="Afficher/Masquer le contenu"
+              >
+                <i class="fas"
+                   [ngClass]="{
+                    'fa-chevron-down': !expandedCardIds.has(petition.id),
+                    'fa-chevron-up': expandedCardIds.has(petition.id)
+                  }"
+                ></i>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="expandedCardIds.has(petition.id)" class="petition-content-detail">
+            <div class="px-4 pb-3 pt-2">
+              <p class="mb-0">{{petition.content}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

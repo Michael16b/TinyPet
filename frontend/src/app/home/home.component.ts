@@ -65,4 +65,17 @@ export class HomeComponent {
     }
   }
 
+  openTopPetitionView() {
+    if (this.userService.isUserLoggedIn()) {
+      this.router.navigate(['/top100petitions']);
+    } else {
+      this.dialog.open(LoginDialogComponent, {
+        width: '400px',
+        data: {
+          message: 'Veuillez vous connecter pour accéder au top 100 des pétitions.',
+        }
+      });
+    }
+  }
+
 }

@@ -7,8 +7,8 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 })
 export class ApiService {
   // private baseUrl: string = window.location.protocol + "//" + window.location.host; // For production
-  //private baseUrl: string = "https://tinypet-atalla-besily-jan.ew.r.appspot.com"; // For pre-production
-  private baseUrl: string = "http://localhost:8080"; // For local development
+  private baseUrl: string = "https://tinypet-atalla-besily-jan.ew.r.appspot.com"; // For pre-production
+  //private baseUrl: string = "http://localhost:8080"; // For local development
 
   constructor(
     private snackBar: MatSnackBar
