@@ -150,7 +150,12 @@ export class PetitionComponent implements OnInit {
 
   async clearTagFilter() {
     this.tagFilter = '';
-    await this.loadPetitions();
+    console.log('Tag filter cleared');
+    if (this.activeFilter === 'signed') {
+      this.showMySignedPetitions();
+    } else {
+      this.showAllPetitions();
+    }
   }
 
   toggleExpand(petitionId: string) {
@@ -193,7 +198,11 @@ export class PetitionComponent implements OnInit {
 
   clearUserSearch() {
     this.userSearch = '';
-    this.onUserSearch();
+    if (this.activeFilter === 'signed') {
+      this.showMySignedPetitions();
+    } else {
+      this.onUserSearch();
+    }
   }
 
   getSearchFieldLabel(field: string): string {

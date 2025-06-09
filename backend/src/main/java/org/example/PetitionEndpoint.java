@@ -181,10 +181,10 @@ public PetitionResponse list(
     // Cas spécial : signedByUserEmail
     if (signedByUserEmail != null && !signedByUserEmail.trim().isEmpty()) {
         List<Key> petitionKeys = getPetitionKeysSignedByUser(signedByUserEmail);
-        Query petitionQuery = new Query("Petition")
-                .setFilter(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, Query.FilterOperator.IN, petitionKeys));
 
-        applyFilters(petitionQuery, tag, userEmail, userSearch, userSearchField);
+        Query petitionQuery = new Query("Petition");
+        Query.Filter filter = PetitionUtils.applyFilters(petitionKeys, tag, userEmail, userSearch, userSearchField);
+        if (filter != null) petitionQuery.setFilter(filter);
 
         List<Entity> petitions = new ArrayList<>(datastore.prepare(petitionQuery).asList(FetchOptions.Builder.withDefaults()));
         sortEntities(petitions, sortBy, sortOrder);

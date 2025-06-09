@@ -7,7 +7,7 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 })
 export class ApiService {
   // private baseUrl: string = window.location.protocol + "//" + window.location.host; // For production
-  // private baseUrl: string = "https://tinypet-atalla-besily-jan.ew.r.appspot.com"; // For pre-production
+  //private baseUrl: string = "https://tinypet-atalla-besily-jan.ew.r.appspot.com"; // For pre-production
   private baseUrl: string = "http://localhost:8080"; // For local development
 
   constructor(
@@ -86,6 +86,7 @@ export class ApiService {
       }
     });
     if (!response.ok) {
+      this.displayError(response)
       throw new Error('Failed to fetch petition list');
     }
     return await response.json();
@@ -102,16 +103,8 @@ export class ApiService {
     console.log("Signing petition with URL: ", url);
 
     let data: any = null;
-    try {
-      data = await response.json();
-    } catch {
-    }
     if (!response.ok) {
-      const message = data?.error?.message || data?.message || 'Failed to sign petition';
-      const error = new Error(message);
-      (error as any).httpStatus = response.status;
-      this.snackBar.open(message, '', { duration: 2000 });
-      throw error;
+      this.displayError(response);
     }
     this.snackBar.open('Merci pour votre signature !', '', { duration: 2000 });
     return data;
@@ -122,5 +115,14 @@ export class ApiService {
     const response = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
     const data = await response.json();
     return data.signers;
+  }
+
+  async displayError(response: Response): Promise<void> {
+    let data: any = await response.json().catch(() => null);
+    const message = data?.error?.message || data?.message || 'Failed to sign petition';
+    const error = new Error(message);
+    (error as any).httpStatus = response.status;
+    this.snackBar.open(message, '', {duration: 2000});
+    throw error;
   }
 }
