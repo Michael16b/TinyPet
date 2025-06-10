@@ -1,4 +1,9 @@
 <div class="container my-4">
+  <div class="d-flex align-items-center mb-3">
+    <button class="btn btn-outline-secondary me-2" (click)="goHome()">
+      <i class="fas fa-arrow-left me-2"></i> Retour
+    </button>
+  </div>
   <h2 class="text-center mb-4">Liste des pétitions</h2>
 
   <div *ngIf="loading" class="text-center my-2">

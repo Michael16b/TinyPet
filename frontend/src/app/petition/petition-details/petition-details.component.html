@@ -1,9 +1,13 @@
 <div class="container my-5">
+  <div class="d-flex align-items-center mb-3">
+    <button class="btn btn-outline-secondary me-2" (click)="goHome()">
+      <i class="fas fa-arrow-left me-2"></i> Retour
+    </button>
+  </div>
   <div *ngIf="loading" class="text-center my-2">
     <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
   </div>
   <div *ngIf="error" class="alert alert-danger">{{error}}</div>
-
   <div *ngIf="petition">
     <h2 class="text-center mb-2">{{petition.title}}</h2>
     <div class="text-center text-muted mb-2" style="font-size: 1rem;">

@@ -51,6 +51,10 @@ export class PetitionComponent implements OnInit {
     private router: Router,
     ) {}
 
+    goHome(): void {
+      this.router.navigate(['/home']);
+    }
+    
   async ngOnInit() {
     await this.loadPetitions();
   }
