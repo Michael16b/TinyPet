@@ -113,6 +113,7 @@ TinyPet est une application web de pétitions, inspirée d’Avaaz et Change.org
 - Affichage du top 100 des pétitions, triées par date.
 - Recherche de pétitions par tag, triées par création.
 - Affichage de tous les signataires d’une pétition.
+- Insertion de 500 pétitions en 1min30.
 
 ## Qu’est-ce qui ne fonctionne pas ?
 
