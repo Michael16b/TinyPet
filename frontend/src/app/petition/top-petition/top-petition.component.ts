@@ -27,6 +27,9 @@ export class TopPetitionComponent implements OnInit {
 
   constructor(private apiService: ApiService, private userService: UserService, private router: Router) {}
 
+  goHome(): void {
+    this.router.navigate(['/home']);
+  }
   async ngOnInit() {
     await this.loadTopPetitions();
   }

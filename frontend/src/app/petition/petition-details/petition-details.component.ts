@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {UserService} from '../../services/user.service';
 import {ApiService} from '../../services/api.service';
 import {DatePipe, NgForOf, NgIf} from '@angular/common';
@@ -23,9 +23,13 @@ export class PetitionDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) {}
 
+  goHome(): void {
+    this.router.navigate(['/petition']);
+  }
   async ngOnInit() {
     this.loading = true;
     let petitionId: string | null = this.route.snapshot.paramMap.get('id');
