@@ -54,7 +54,7 @@ export class PetitionComponent implements OnInit {
     goHome(): void {
       this.router.navigate(['/home']);
     }
-    
+
   async ngOnInit() {
     await this.loadPetitions();
   }
@@ -120,7 +120,8 @@ export class PetitionComponent implements OnInit {
         this.nextPageIsEmpty = true;
       }
     } catch (e: any) {
-      this.error = 'Impossible de charger les pétitions.';
+      this.petitions = [];
+      this.error = 'Impossible de charger les pétitions : '+ e.message || 'Erreur inconnue';
     } finally {
       this.loading = false;
     }

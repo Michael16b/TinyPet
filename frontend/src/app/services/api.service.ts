@@ -86,8 +86,9 @@ export class ApiService {
       }
     });
     if (!response.ok) {
-      this.displayError(response)
-      throw new Error('Failed to fetch petition list');
+      const {status, data} = await this.getMessage(response);
+      this.displayError(data?.message || 'Erreur inconnue', status.toString());
+      throw new Error(data?.message);
     }
     return await response.json();
   }
@@ -104,7 +105,8 @@ export class ApiService {
 
     let data: any = null;
     if (!response.ok) {
-      this.displayError(response);
+      const {status, data} = await this.getMessage(response);
+      this.displayError(data?.message || 'Erreur inconnue', status.toString());
     }
     this.snackBar.open('Merci pour votre signature !', '', { duration: 2000 });
     return data;
@@ -117,12 +119,15 @@ export class ApiService {
     return data.signers;
   }
 
-  async displayError(response: Response): Promise<void> {
-    let data: any = await response.json().catch(() => null);
-    const message = data?.error?.message || data?.message || 'Failed to sign petition';
+  async displayError(message: string, statut : string): Promise<void> {
     const error = new Error(message);
-    (error as any).httpStatus = response.status;
+    (error as any).httpStatus = statut;
     this.snackBar.open(message, '', {duration: 2000});
     throw error;
+  }
+
+  async getMessage(response: Response): Promise<{ status: number, data: any }> {
+    let data: any = await response.json().catch(() => null);
+    return { status: response.status, data: data?.error };
   }
 }

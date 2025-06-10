@@ -4,7 +4,6 @@ import com.google.api.server.spi.config.*;
 import com.google.api.server.spi.response.ConflictException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.api.server.spi.response.UnauthorizedException;
-import com.google.api.server.spi.response.UnauthorizedException;
 import com.google.appengine.api.datastore.*;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -14,15 +13,8 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 
 import java.util.*;
 
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-
 import java.util.Collections;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.google.api.server.spi.config.Api;
 
@@ -38,8 +30,8 @@ import static org.example.PetitionUtils.getEmbeddedPetitions;
   audiences = "598050199229-8svis83vs9bug6d5tpjqjta3jnbusdan.apps.googleusercontent.com",
   namespace = 
     @ApiNamespace(
-    ownerDomain = "example.com",
-    ownerName = "example.com",
+    ownerDomain = "tinypet-atalla-besily-jan.ew.r.appspot.com",
+    ownerName = "tinypet-atalla-besily-jan.ew.r.appspot.com",
     packagePath = ""
   )
 )
@@ -48,7 +40,6 @@ public class PetitionEndpoint {
     private final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     private static final Logger logger = Logger.getLogger(PetitionEndpoint.class.getName());
 
-    // Ton CLIENT_ID Google (remplace-le par le tien si besoin)
     private static final String CLIENT_ID = "598050199229-8svis83vs9bug6d5tpjqjta3jnbusdan.apps.googleusercontent.com";
     private static final int NUM_SHARDS = 10;
 
@@ -64,10 +55,10 @@ public class PetitionEndpoint {
             if (idToken != null) {
                 return idToken.getPayload();
             } else {
-                throw new UnauthorizedException("Invalid ID token.");
+                throw new UnauthorizedException("Token de connexion Invalide");
             }
         } catch (Exception e) {
-            throw new UnauthorizedException("Token verification failed: " + e.getMessage());
+            throw new UnauthorizedException("Utilisateur non connecté");
         }
     }
 
@@ -195,7 +186,6 @@ public PetitionResponse list(
         return response;
     }
 
-    // Requête classique
     Query query = new Query("Petition");
     applyFilters(query, tag, userEmail, userSearch, userSearchField);
     applySort(query, sortBy, sortOrder);
@@ -301,7 +291,6 @@ private void sortEntities(List<Entity> entities, String sortBy, String sortOrder
 
             Key petitionKey = KeyFactory.createKey("Petition", petitionId);
 
-            // Vérifie si la personne a déjà signé
             Query query = new Query("Signature")
                     .setFilter(Query.CompositeFilterOperator.and(
                             new Query.FilterPredicate("petitionId", Query.FilterOperator.EQUAL, petitionId),
@@ -311,7 +300,6 @@ private void sortEntities(List<Entity> entities, String sortBy, String sortOrder
                 throw new ConflictException("Vous avez déjà signé cette pétition.");
             }
 
-            // Enregistre la signature avec nom/prénom
             Entity signature = new Entity("Signature");
             signature.setProperty("petitionId", petitionId);
             signature.setProperty("userEmail", userEmail);
@@ -320,7 +308,6 @@ private void sortEntities(List<Entity> entities, String sortBy, String sortOrder
             signature.setProperty("lastName", lastName);
             datastore.put(signature);
 
-            // Incrémente le compteur de signatures
             int shardIndex = (int) (Math.random() * NUM_SHARDS);
             String shardId = petitionId + "-shard-" + shardIndex;
 

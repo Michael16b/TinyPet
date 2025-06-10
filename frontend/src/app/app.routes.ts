@@ -7,7 +7,6 @@ import {TopPetitionComponent} from './petition/top-petition/top-petition.compone
 
 export const routes: Routes = [
   {path: '', redirectTo: '/home', pathMatch: 'full'},
-  {path: 'home', component: HomeComponent},
   {path: 'login', component: LoginComponent},
   {path: 'petition', component: PetitionComponent},
   { path: 'petition/:id', component: PetitionDetailsComponent },
