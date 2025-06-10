@@ -52,10 +52,21 @@ TinyPet est une application web de pétitions, inspirée d’Avaaz et Change.org
 - **Node.js et npm** (pour la partie Angular)
 - **Google Cloud SDK** (pour le déploiement)
 
-### Backend (Google Cloud Endpoints Java)
+### Frontend (Angular)
 1. Clonez le dépôt :
     ```bash
     git clone https://github.com/Michael16b/TinyPet.git
+    cd TinyPet/frontend
+    ```
+2. Installez les dépendances :
+    ```bash
+    npm install
+    npm run build
+    ```
+
+### Backend (Google Cloud Endpoints Java)
+1. Allez dans le dossier backend :
+    ```bash
     cd TinyPet/backend
     ```
 2. Compilez le backend :
@@ -71,22 +82,6 @@ TinyPet est une application web de pétitions, inspirée d’Avaaz et Change.org
     gcloud init
     mvn appengine:deploy
     ```
-
-### Frontend (Angular)
-1. Allez dans le dossier frontend :
-    ```bash
-    cd TinyPet/frontend
-    ```
-2. Installez les dépendances :
-    ```bash
-    npm install
-    npm run build
-    ```
-3. Lancez le serveur de développement :
-    ```bash
-    npm install
-    ```
-4. Accédez à l’application sur [http://localhost:4200](http://localhost:4200)
 
 ## Architecture
 
