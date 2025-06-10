@@ -1,7 +1,6 @@
 package org.example;
 
 import java.util.List;
-import com.google.appengine.api.datastore.Entity;
 
 public class PetitionResponse {
     private String status;

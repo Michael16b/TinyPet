@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {jwtDecode} from 'jwt-decode';
 import {GoogleJwtPayload} from '../interfaces/google-jwt-payload';
-import {CookiesService} from '../services/cookies.service';
 import {UserService} from '../services/user.service';
 import { MatDialogRef } from '@angular/material/dialog';
 
@@ -35,12 +34,6 @@ export class LoginComponent implements AfterViewInit {
   handleCredentialResponse(response: any): void {
     console.log('ID Token:', response.credential);
     const responsePayload = jwtDecode<GoogleJwtPayload>(response.credential);
-    // console.log("ID: " + responsePayload.id);
-    // console.log('Full Name: ' + responsePayload.name);
-    // console.log('Given Name: ' + responsePayload.given_name);
-    // console.log('Family Name: ' + responsePayload.family_name);
-    // console.log("Image URL: " + responsePayload.picture);
-    // console.log("Email: " + responsePayload.email);
 
     this.userService.login(
       responsePayload.id,

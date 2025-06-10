@@ -169,7 +169,6 @@ public PetitionResponse list(
             ", userSearchField=" + userSearchField +
             ", cursor=" + cursor);
 
-    // Cas spécial : signedByUserEmail
     if (signedByUserEmail != null && !signedByUserEmail.trim().isEmpty()) {
         List<Key> petitionKeys = getPetitionKeysSignedByUser(signedByUserEmail);
 

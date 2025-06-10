@@ -1,6 +1,5 @@
 package org.router;
 
-import org.example.PetitionEndpoint;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -30,13 +29,8 @@ public class SPARouter implements Filter {
                         !path.equals("/") &&
                         !path.equals("/index.html") &&
                         !path.matches(".*\\.[a-zA-Z0-9]+$") &&
-                        !path.startsWith("/assets") &&
-                        !path.startsWith("/static")
+                        !path.startsWith("/assets")
         ) {
-
-            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-            response.setHeader("Pragma", "no-cache");
-            response.setDateHeader("Expires", 0);
 
             request.getRequestDispatcher("/index.html").forward(request, response);
             return;

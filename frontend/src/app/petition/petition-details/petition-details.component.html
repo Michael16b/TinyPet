@@ -14,7 +14,6 @@
       <span>Créée le {{petition.creationDate | date:'dd/MM/yyyy HH:mm'}}</span><br/>
       <span>Par {{petition.creatorFirstName}} {{petition.creatorLastName}}</span>
     </div>
-    <!-- Bloc tags -->
     <div *ngIf="petition.tags?.length > 0" class="text-center mb-4">
       <ng-container *ngFor="let tag of petition.tags">
         <span class="badge rounded-pill bg-primary mx-1" style="font-size: 1rem;">#{{tag}}</span>

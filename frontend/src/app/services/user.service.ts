@@ -25,7 +25,7 @@ export class UserService {
     this.isLoggedIn = true;
 
     if (this.loginCallback) {
-      this.loginCallback(); // prévenir que la connexion a eu lieu
+      this.loginCallback();
     }
   }
 
@@ -41,7 +41,7 @@ export class UserService {
     this.tokenCheckStarted = false;
 
     if (this.loginCallback) {
-      this.loginCallback(); // prévenir que la déconnexion a eu lieu
+      this.loginCallback();
     }
   }
 
@@ -99,7 +99,7 @@ export class UserService {
         } else {
           this.isLoggedIn = this.isUserLoggedIn();
         }
-      }, 5000); // toutes les 5 secondes
+      }, 5000);
     }
   }
 

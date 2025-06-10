@@ -59,7 +59,6 @@ export class CreatePetitionDialogComponent {
   description = '';
   petitionDate: Date = new Date();
 
-  // Gestion des tags
   selectedTags: string[] = [];
   tagInput: string = '';
   separatorKeysCodes: number[] = [ENTER, COMMA];
@@ -69,12 +68,10 @@ export class CreatePetitionDialogComponent {
   readonly allTags: string[] = ['Environnement', 'Société', 'Animaux', 'Santé', 'Éducation', 'Écologie', 'Ville', 'Solidarité', 'Droit', 'Politique'];
   readonly filteredTags = computed(() => {
     const query = this.currentTags().toLowerCase();
-    // On part d'une liste filtrée par la saisie
     let results = query
       ? this.allTags.filter(tag => tag.toLowerCase().includes(query))
       : this.allTags.slice();
 
-    // Exclure les tags déjà sélectionnés
     results = results.filter(tag => !this.tags().includes(tag));
 
     return results;
@@ -100,7 +97,6 @@ export class CreatePetitionDialogComponent {
       this.tags.update(tags => [...tags, value]);
     }
 
-    // Réinitialiser l'input
     this.currentTags.set('');
   }
 

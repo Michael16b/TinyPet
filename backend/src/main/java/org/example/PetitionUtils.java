@@ -24,7 +24,6 @@ public class PetitionUtils {
             String userSearchField
     ) {
         List<Query.Filter> filters = new ArrayList<>();
-        // Filtre IN sur la clé (si fourni)
         if (petitionKeys != null && !petitionKeys.isEmpty()) {
             filters.add(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, Query.FilterOperator.IN, petitionKeys));
         }

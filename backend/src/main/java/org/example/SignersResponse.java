@@ -1,7 +1,5 @@
 package org.example;
 
-import com.google.appengine.api.datastore.Entity;
-import java.util.Date;
 import java.util.List;
 
 

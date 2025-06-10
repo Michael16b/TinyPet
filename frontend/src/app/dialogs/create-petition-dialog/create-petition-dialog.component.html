@@ -7,7 +7,6 @@
 
 <mat-dialog-content class="mat-typography petition-dialog-content">
   <form #petitionForm="ngForm" class="d-flex flex-column h-100" (ngSubmit)="onCreate()" autocomplete="off">
-    <!-- Titre -->
     <div class="mb-4">
       <label for="petitionTitle" class="form-label fw-semibold">
         <i class="fas fa-heading me-2 text-secondary"></i>
@@ -27,7 +26,7 @@
       </mat-form-field>
     </div>
 
-    <!-- Description -->
+
     <div class="mb-4 flex-grow-1 d-flex flex-column">
       <label for="petitionDescription" class="form-label fw-semibold">
         <i class="fas fa-align-left me-2 text-secondary"></i>
@@ -48,7 +47,7 @@
       </mat-form-field>
     </div>
 
-    <!-- Tags -->
+
     <div class="mb-4">
       <label class="form-label fw-semibold">
         <i class="fas fa-tags me-2 text-secondary"></i>

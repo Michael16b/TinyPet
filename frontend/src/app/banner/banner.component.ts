@@ -27,13 +27,11 @@ export class BannerComponent implements OnInit {
     this.updateUser();
     this.userService.refreshUser();
 
-    // Mettre à jour l'affichage toutes les 3 secondes
     setInterval(() => {
       this.updateUser();
       this.cdr.detectChanges();
     }, 3000);
 
-    // Callback sur login ou logout
     this.userService.setLoginCallback(() => {
       this.updateUser();
       this.cdr.detectChanges();

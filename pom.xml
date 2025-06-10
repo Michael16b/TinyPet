@@ -28,35 +28,6 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
-<!--                    <execution>-->
-<!--                        <id>start-backend</id>-->
-<!--                        <phase>pre-integration-test</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>java</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <mainClass>org.example.Main</mainClass>-->
-<!--                            <classpathScope>runtime</classpathScope>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-
-<!--                    <execution>-->
-<!--                        <id>start-frontend</id>-->
-<!--                        <phase>pre-integration-test</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>exec</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <executable>npm</executable>-->
-<!--                            <workingDirectory>${project.basedir}/frontend</workingDirectory>-->
-<!--                            <arguments>-->
-<!--                                <argument>start</argument>-->
-<!--                                <argument>&#45;&#45;</argument>-->
-<!--                                <argument>&#45;&#45;port=8090</argument>-->
-<!--                            </arguments>-->
-<!--                            <async>true</async>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
                 </executions>
             </plugin>
 
