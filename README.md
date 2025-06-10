@@ -60,7 +60,7 @@ TinyPet est une application web de pétitions, inspirée d’Avaaz et Change.org
     ```
 2. Compilez le backend :
     ```bash
-    mvn package
+    mvn package -Dskip.npm
     ```
 3. Lancez le backend en local :
     ```bash
@@ -80,6 +80,7 @@ TinyPet est une application web de pétitions, inspirée d’Avaaz et Change.org
 2. Installez les dépendances :
     ```bash
     npm install
+    npm run build
     ```
 3. Lancez le serveur de développement :
     ```bash
